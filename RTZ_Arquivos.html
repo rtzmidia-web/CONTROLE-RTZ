@@ -1,0 +1,1273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTZ Mídia — Sistema de Arquivos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e0f;--bg2:#161618;--bg3:#1e1e21;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;
+  --green:#2ecc8f;--green-bg:rgba(46,204,143,0.10);
+  --red:#e05c5c;--red-bg:rgba(224,92,92,0.10);
+  --amber:#e8a030;--amber-bg:rgba(232,160,48,0.10);
+  --blue:#5b9cf6;--blue-bg:rgba(91,156,246,0.10);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.10);
+  --radius:10px;--radius-lg:16px;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:14px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px;}
+
+.layout{display:grid;grid-template-columns:230px 1fr;min-height:100vh;}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:22px 18px 14px;border-bottom:1px solid var(--border);}
+.brand{font-size:17px;font-weight:700;letter-spacing:.02em;}
+.sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:6px;box-shadow:0 0 8px var(--green);}
+
+.nav-sep{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:14px 16px 4px;}
+.nav-items{padding:0 10px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--bg3);color:var(--text);border-left-color:var(--green);}
+.nav-item .icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border);margin-top:auto;}
+.footer-info{font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;}
+
+.main{overflow:auto;}
+.main-inner{padding:26px 30px;max-width:1140px;}
+.page-header{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px;}
+.page-title{font-size:21px;font-weight:700;letter-spacing:-.01em;}
+.page-sub{font-size:13px;color:var(--text2);margin-top:3px;}
+
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:18px;}
+.metric-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:13px 15px;position:relative;overflow:hidden;}
+.metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.mc-green::before{background:var(--green);}
+.mc-blue::before{background:var(--blue);}
+.mc-amber::before{background:var(--amber);}
+.mc-purple::before{background:var(--purple);}
+.mc-red::before{background:var(--red);}
+.m-label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px;}
+.m-value{font-size:18px;font-weight:700;font-family:var(--mono);}
+.mv-green{color:var(--green);}
+.mv-blue{color:var(--blue);}
+.mv-amber{color:var(--amber);}
+.mv-purple{color:var(--purple);}
+.mv-red{color:var(--red);}
+
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.panel-title{font-size:13px;font-weight:600;}
+.panel-body{padding:16px;}
+.panel-body.no-pad{padding:0;}
+
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:10px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;}
+input,select{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:7px 10px;width:100%;outline:none;transition:border .15s;}
+input:focus,select:focus{border-color:var(--green);}
+select option{background:var(--bg2);}
+.btn{padding:7px 15px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all .15s;}
+.btn-primary{background:var(--green);color:#0a1a12;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid transparent;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{text-align:left;padding:9px 13px;font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border);font-weight:500;}
+td{padding:10px 13px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:rgba(255,255,255,.02);}
+
+.badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;font-family:var(--mono);}
+.badge-green{background:var(--green-bg);color:var(--green);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);}
+.badge-red{background:var(--red-bg);color:var(--red);}
+.badge-gray{background:rgba(255,255,255,.06);color:var(--text2);}
+
+.del-btn{background:none;border:none;color:var(--text3);cursor:pointer;padding:3px 7px;border-radius:6px;font-size:13px;transition:all .15s;}
+.del-btn:hover{background:var(--red-bg);color:var(--red);}
+
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:13px;}
+.filters select,.filters input{padding:5px 10px;font-size:12px;max-width:180px;}
+
+.section{display:none;}
+.section.active{display:block;}
+.empty-state{text-align:center;padding:26px;color:var(--text3);font-size:13px;}
+
+.type-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;}
+.type-pill{padding:5px 13px;border-radius:99px;cursor:pointer;font-size:12px;font-weight:600;border:1px solid var(--border2);background:none;color:var(--text2);font-family:var(--font);transition:all .15s;}
+.type-pill:hover{color:var(--text);}
+.type-pill.active{background:var(--green-bg);color:var(--green);border-color:rgba(46,204,143,.3);}
+
+.fase-tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border);}
+.fase-tab{padding:8px 16px;cursor:pointer;font-size:13px;font-weight:600;border:none;background:none;color:var(--text2);font-family:var(--font);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;}
+.fase-tab:hover{color:var(--text);}
+.fase-tab.active{color:var(--green);border-bottom-color:var(--green);}
+.fase-panel{display:none;}
+.fase-panel.active{display:block;}
+
+.result-panel{background:var(--bg3);border:1px solid rgba(46,204,143,.2);border-radius:var(--radius-lg);padding:18px 20px;margin-top:16px;}
+.result-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.result-path{font-family:var(--mono);font-size:11px;color:var(--text2);margin-bottom:4px;}
+.result-name{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--green);word-break:break-all;}
+.result-full{font-family:var(--mono);font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:1px solid var(--border);}
+.result-actions{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center;}
+
+.drive-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:4px;}
+.drive-card{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:14px;cursor:pointer;transition:all .15s;}
+.drive-card:hover{border-color:rgba(255,255,255,.22);}
+.drive-card.selected{border-color:var(--green);background:rgba(46,204,143,.06);}
+.drive-icon{width:34px;height:34px;border-radius:8px;background:var(--bg2);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.drive-name{font-size:13px;font-weight:600;margin-bottom:2px;}
+.drive-type{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.drive-bar{height:3px;background:var(--bg);border-radius:2px;margin-top:10px;}
+.drive-bar-fill{height:3px;border-radius:2px;transition:width .4s;}
+.drive-usage{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:4px;}
+
+.expl-drive{margin-bottom:20px;}
+.expl-drive-head{display:flex;align-items:center;gap:12px;padding:16px 20px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:0;cursor:pointer;transition:border-color .15s;}
+.expl-drive-head:hover{border-color:var(--border2);}
+.expl-drive-head.open{border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-bottom-color:var(--border);}
+.expl-body{background:var(--bg2);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-lg) var(--radius-lg);padding:0 20px 16px;}
+.expl-body.hidden{display:none;}
+.expl-cli{border-top:1px solid var(--border);padding:14px 0 0;}
+.expl-cli-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--text2);font-family:var(--mono);flex-shrink:0;}
+.proj-chips{display:flex;flex-wrap:wrap;gap:6px;padding-left:40px;margin-bottom:10px;}
+.proj-chip{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius);padding:6px 10px;font-size:12px;}
+.proj-chip-name{font-family:var(--mono);font-weight:500;margin-bottom:4px;}
+.proj-chip-badges{display:flex;gap:4px;flex-wrap:wrap;}
+.arq-list{padding-left:40px;display:flex;flex-direction:column;gap:3px;margin-bottom:8px;}
+.arq-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:8px;background:var(--bg3);}
+.arq-row span.mono{font-family:var(--mono);font-size:11px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2);}
+.arq-row .copy-link{background:none;border:1px solid var(--border2);border-radius:6px;color:var(--text3);cursor:pointer;font-size:10px;font-family:var(--mono);padding:2px 7px;transition:all .15s;flex-shrink:0;}
+.arq-row .copy-link:hover{color:var(--green);border-color:rgba(46,204,143,.3);}
+.toggle-arqs{font-size:11px;color:var(--text3);font-family:var(--mono);cursor:pointer;padding-left:40px;display:flex;align-items:center;gap:4px;margin-bottom:6px;border:none;background:none;transition:color .15s;}
+.toggle-arqs:hover{color:var(--text2);}
+
+.busca-hero{padding:32px 0 24px;}
+.busca-input-wrap{position:relative;}
+.busca-input-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;opacity:.4;pointer-events:none;}
+.busca-big{font-size:16px;padding:12px 14px 12px 44px;border-radius:var(--radius-lg);background:var(--bg2);border:1px solid var(--border2);}
+.busca-big:focus{border-color:var(--green);}
+.cli-list-item{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:all .15s;}
+.cli-list-item:hover{border-color:var(--border2);}
+.cli-list-item .avatar-lg{width:40px;height:40px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text2);font-family:var(--mono);flex-shrink:0;}
+.cli-list-item .cli-info{flex:1;}
+.cli-list-item .cli-sigla{font-size:14px;font-weight:700;font-family:var(--mono);}
+.cli-list-item .cli-nome{font-size:12px;color:var(--text2);margin-top:1px;}
+.result-section-title{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px;}
+.busca-drive-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden;}
+.busca-drive-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.busca-arq-row{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--border);}
+.busca-arq-row:last-child{border-bottom:none;}
+.busca-arq-row:hover{background:rgba(255,255,255,.02);}
+.busca-arq-name{font-family:var(--mono);font-size:12px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text);}
+mark{background:rgba(232,160,48,.25);color:var(--amber);border-radius:3px;padding:0 2px;}
+
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:24px;width:460px;max-width:95vw;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:8px;}
+.modal-msg{font-size:13px;color:var(--text2);margin-bottom:20px;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:12px;padding:10px 18px;border-radius:var(--radius);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+@media(max-width:740px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:static;}
+  .main-inner{padding:14px;}
+}
+
+/* ── STARTUP OVERLAY ─────────────────────────────────────── */
+.startup-overlay{position:fixed;inset:0;background:#0e0e0f;z-index:99998;display:flex;align-items:center;justify-content:center;}
+.startup-overlay.gone{display:none;}
+.startup-box{background:#161618;border:1px solid rgba(255,255,255,0.13);border-radius:18px;padding:36px 40px;width:400px;max-width:92vw;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;}
+.startup-icon{width:52px;height:52px;border-radius:14px;background:rgba(46,204,143,.12);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(46,204,143,.25);}
+.startup-title{font-size:18px;font-weight:700;letter-spacing:-.02em;color:#f0ede8;}
+.startup-sub{font-size:12px;color:#9e9b95;font-family:'DM Mono',monospace;line-height:1.6;}
+.startup-btn-primary{width:100%;padding:11px;border-radius:10px;background:#2ecc8f;color:#0a1a12;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:filter .15s;}
+.startup-btn-primary:hover{filter:brightness(1.1);}
+.startup-btn-ghost{width:100%;padding:9px;border-radius:10px;background:none;border:1px solid rgba(255,255,255,0.13);color:#9e9b95;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.startup-btn-ghost:hover{border-color:rgba(255,255,255,0.25);color:#f0ede8;}
+.startup-hint{font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace;}
+
+
+/* ── GOOGLE DRIVE INTEGRATION ───────────────────────────────── */
+.drive-btn{width:100%;padding:10px;border-radius:10px;background:none;border:1px solid rgba(66,133,244,0.4);color:#4285f4;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.drive-btn:hover{background:rgba(66,133,244,0.1);border-color:rgba(66,133,244,0.7);}
+.drive-btn svg{flex-shrink:0;}
+.drive-sep{width:100%;display:flex;align-items:center;gap:10px;font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace;}
+.drive-sep::before,.drive-sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.drive-status{font-size:11px;font-family:'DM Mono',monospace;text-align:center;min-height:16px;transition:color .2s;}
+.drive-status.ok{color:#2ecc8f;}
+.drive-status.err{color:#e05c5c;}
+.drive-status.loading{color:#9e9b95;}
+
+</style>
+</head>
+<body>
+
+<!-- ── STARTUP OVERLAY ─────────────────────────────────────── -->
+<div class="startup-overlay" id="startup-overlay">
+  <div class="startup-box">
+    <div class="startup-icon">◫</div>
+    <div class="startup-title">Nomenclatura & Arquivos</div>
+    <div class="startup-sub">Carregue o backup para continuar de onde parou,<br>ou comece uma sessão nova.</div>
+    <input type="file" id="startup-file-arq" accept=".json" style="display:none" onchange="startupCarregarJSON(event)">
+    <button class="startup-btn-primary" onclick="document.getElementById('startup-file-arq').click()">Carregar backup (.json)</button>
+    <button class="startup-btn-ghost" onclick="startupPularBackup()">Começar sem backup</button>
+    <div class="startup-hint">Os dados são salvos automaticamente ao sair</div>
+    <div class="drive-sep">Google Drive</div>
+    <button class="drive-btn" onclick="driveCarregar()">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".6"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".8"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      Carregar do Drive
+    </button>
+    <button class="drive-btn" onclick="driveSalvar()" id="drive-save-btn" style="display:none">
+      <svg width="16" height="16" viewBox="0 0 24 24"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".6"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".8"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      Salvar no Drive
+    </button>
+    <div class="drive-status" id="drive-status"></div>
+
+  </div>
+</div>
+
+<div class="layout">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand"><span class="dot"></span>RTZ Mídia</div>
+    <div class="sub">// sistema de arquivos</div>
+  </div>
+  <div class="nav-items">
+    <div class="nav-sep">Nomenclatura</div>
+    <button class="nav-item active" onclick="goSec('gerar',this)">
+      <span class="icon">⊕</span> Gerar nome
+    </button>
+    <button class="nav-item" onclick="goSec('historico',this)">
+      <span class="icon">◷</span> Histórico
+    </button>
+    <div class="nav-sep">Organização</div>
+    <button class="nav-item" onclick="goSec('explorador',this)">
+      <span class="icon">◫</span> Explorador de drives
+    </button>
+    <button class="nav-item" onclick="goSec('busca',this)">
+      <span class="icon">◎</span> Busca por cliente
+    </button>
+    <div class="nav-sep">Cadastros</div>
+    <button class="nav-item" onclick="goSec('drives',this)">
+      <span class="icon">▤</span> Drives
+    </button>
+    <button class="nav-item" onclick="goSec('clientes',this)">
+      <span class="icon">◈</span> Clientes
+    </button>
+    <div class="nav-sep">Google Drive</div>
+    <button class="nav-item" onclick="driveSalvar()" style="color:#4285f4;border-left-color:#4285f4">
+      <span class="icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:middle"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".7"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".85"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      </span> Salvar no Drive
+    </button>
+    <button class="nav-item" onclick="driveCarregarSidebar()" style="color:#4285f4">
+      <span class="icon">
+        <svg width="13" height="13" viewBox="0 0 24 24" style="vertical-align:middle"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".7"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".85"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      </span> Carregar do Drive
+    </button>
+    <div class="nav-sep">Sistema</div>
+    <button class="nav-item" onclick="exportarDados()">
+      <span class="icon">↓</span> Exportar backup
+    </button>
+    <button class="nav-item" onclick="importarDados()">
+      <span class="icon">↑</span> Importar backup
+    </button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="footer-info" id="footer-date"></div>
+  </div>
+</aside>
+
+<div class="main">
+<div class="main-inner">
+
+<!-- ===== GERAR ===== -->
+<div id="sec-gerar" class="section active">
+  <div class="page-header">
+    <div><div class="page-title">Gerar nomenclatura</div><div class="page-sub">Preencha os campos para gerar o nome padronizado</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Drive de destino</span></div>
+    <div class="panel-body">
+      <div class="drive-grid" id="drive-selector">
+        <div style="color:var(--text3);font-size:13px;font-family:var(--mono)">Nenhum drive cadastrado — vá em <b style="color:var(--text2)">Drives</b> para adicionar.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Tipo de conteúdo</span></div>
+    <div class="panel-body">
+      <div class="type-pills">
+        <button class="type-pill active" onclick="setTipo('VIDEO',this)">Vídeo</button>
+        <button class="type-pill" onclick="setTipo('FOTO',this)">Foto</button>
+        <button class="type-pill" onclick="setTipo('AUDIO',this)">Áudio</button>
+        <button class="type-pill" onclick="setTipo('DESIGN',this)">Design / Motion</button>
+      </div>
+      <div class="fase-tabs">
+        <button class="fase-tab active" onclick="setFase('bruto',this)">01 · Bruto</button>
+        <button class="fase-tab" onclick="setFase('projeto',this)">02 · Projeto</button>
+        <button class="fase-tab" onclick="setFase('entrega',this)">03 · Entrega</button>
+      </div>
+
+      <div id="fp-bruto" class="fase-panel active">
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente</label><input id="b-cli" type="text" placeholder="ex: NIKE" oninput="this.value=this.value.toUpperCase();gerarNome()" list="lista-clientes"></div>
+          <div class="form-group"><label>Projeto / Descrição</label><input id="b-proj" type="text" placeholder="ex: SUMMER_CAMP" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Data do set / captura</label><input id="b-data" type="date" oninput="gerarNome()"></div>
+        </div>
+      </div>
+
+      <div id="fp-projeto" class="fase-panel">
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente</label><input id="p-cli" type="text" placeholder="ex: NIKE" oninput="this.value=this.value.toUpperCase();gerarNome()" list="lista-clientes"></div>
+          <div class="form-group"><label>Projeto</label><input id="p-proj" type="text" placeholder="ex: SUMMER_CAMP" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Tipo de edição</label>
+            <select id="p-tipo" onchange="gerarNome()">
+              <option value="EDIT">EDIT — Edição</option><option value="CUT">CUT — Corte</option>
+              <option value="GRADE">GRADE — Gradação</option><option value="MIX">MIX — Mix de áudio</option>
+              <option value="MOTION">MOTION — Motion</option><option value="COMP">COMP — Compositing</option>
+              <option value="LAYOUT">LAYOUT — Layout</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Software</label>
+            <select id="p-soft" onchange="gerarNome()">
+              <option value="prproj">Premiere Pro</option><option value="aep">After Effects</option>
+              <option value="drp">DaVinci Resolve</option><option value="psd">Photoshop</option>
+              <option value="ai">Illustrator</option><option value="indd">InDesign</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Versão</label><input id="p-ver" type="number" value="1" min="1" max="99" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="p-status" onchange="gerarNome()">
+              <option value="">Nenhum</option><option value="WIP">WIP</option>
+              <option value="REVISAO">REVISAO</option><option value="APROVADO">APROVADO</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="fp-entrega" class="fase-panel">
+        <div class="form-grid">
+          <div class="form-group"><label>Cliente</label><input id="e-cli" type="text" placeholder="ex: NIKE" oninput="this.value=this.value.toUpperCase();gerarNome()" list="lista-clientes"></div>
+          <div class="form-group"><label>Projeto</label><input id="e-proj" type="text" placeholder="ex: SUMMER_CAMP" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Peça / Produto</label><input id="e-peca" type="text" placeholder="ex: REEL_PRINCIPAL" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Especificação</label><input id="e-spec" type="text" placeholder="ex: 1920x1080" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Versão</label><input id="e-ver" type="number" value="1" min="1" oninput="gerarNome()"></div>
+          <div class="form-group"><label>Status</label>
+            <select id="e-status" onchange="gerarNome()">
+              <option value="FINAL">FINAL</option><option value="APROVADO">APROVADO</option>
+              <option value="CLIENTE">CLIENTE</option><option value="REVISAO">REVISAO</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Extensão</label>
+            <select id="e-ext" onchange="gerarNome()">
+              <option value="mp4">MP4</option><option value="mov">MOV</option><option value="mxf">MXF</option>
+              <option value="jpg">JPG</option><option value="png">PNG</option><option value="tiff">TIFF</option>
+              <option value="mp3">MP3</option><option value="wav">WAV</option>
+              <option value="pdf">PDF</option><option value="ai">AI</option><option value="psd">PSD</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultado" style="display:none">
+        <div class="result-panel">
+          <div class="result-label">Caminho base</div>
+          <div id="res-path" class="result-path"></div>
+          <div class="result-label" style="margin-top:10px" id="res-label">Nome gerado</div>
+          <div id="res-name" class="result-name"></div>
+          <div id="res-full" class="result-full"></div>
+          <div class="result-actions">
+            <button class="btn btn-primary" onclick="copiarNome()" id="btn-copiar-nome">Copiar nome</button>
+            <button class="btn btn-ghost" onclick="copiarFull()">Copiar caminho completo</button>
+            <button class="btn btn-ghost btn-sm" onclick="salvarHistorico()" style="margin-left:auto">+ Salvar no histórico</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== HISTÓRICO ===== -->
+<div id="sec-historico" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Histórico</div><div class="page-sub">Todos os arquivos registrados</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">Exportar CSV</button>
+  </div>
+  <div class="cards-grid" id="stats-hist"></div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title" id="hist-count">Registros</span></div>
+    <div class="panel-body">
+      <div class="filters">
+        <input type="text" id="hist-busca" placeholder="Buscar..." oninput="renderHistorico()">
+        <select id="hist-ftipo" onchange="renderHistorico()"><option value="">Todos os tipos</option><option value="VIDEO">Vídeo</option><option value="FOTO">Foto</option><option value="AUDIO">Áudio</option><option value="DESIGN">Design</option></select>
+        <select id="hist-ffase" onchange="renderHistorico()"><option value="">Todas as fases</option><option value="bruto">Bruto</option><option value="projeto">Projeto</option><option value="entrega">Entrega</option></select>
+        <select id="hist-fdrv" onchange="renderHistorico()"><option value="">Todos os drives</option></select>
+      </div>
+    </div>
+    <div class="panel-body no-pad">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Cliente</th><th>Drive</th><th>Tipo</th><th>Fase</th><th>Data</th><th></th></tr></thead>
+          <tbody id="tbody-hist"></tbody>
+        </table>
+        <div id="hist-empty" class="empty-state" style="display:none">Nenhum arquivo registrado ainda.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EXPLORADOR ===== -->
+<div id="sec-explorador" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Explorador de drives</div><div class="page-sub">Visualize o conteúdo registrado em cada HD e SSD</div></div>
+  </div>
+  <div class="cards-grid" id="expl-stats"></div>
+  <div id="expl-lista"></div>
+</div>
+
+<!-- ===== BUSCA ===== -->
+<div id="sec-busca" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Busca por cliente</div><div class="page-sub">Encontre todos os arquivos de um cliente em qualquer drive</div></div>
+  </div>
+  <div class="busca-input-wrap" style="margin-bottom:24px">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="busca-big" type="text" id="busca-big" placeholder="Digite o nome ou sigla do cliente..." oninput="renderBusca()" list="lista-clientes" autocomplete="off">
+  </div>
+  <div id="busca-result"></div>
+</div>
+
+<!-- ===== DRIVES ===== -->
+<div id="sec-drives" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Drives</div><div class="page-sub">Cadastre e gerencie os HDs e SSDs</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Adicionar drive</span></div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome / Label</label><input id="d-nome" type="text" placeholder="ex: SSD_PROJETOS_01"></div>
+        <div class="form-group"><label>Tipo</label>
+          <select id="d-tipo"><option value="SSD">SSD externo</option><option value="HDD">HD externo</option><option value="SSD_INT">SSD interno</option><option value="HDD_INT">HD interno</option><option value="NAS">NAS</option><option value="RAID">RAID</option></select>
+        </div>
+        <div class="form-group"><label>Função</label>
+          <select id="d-func"><option value="PRODUCAO">Produção</option><option value="BACKUP">Backup</option><option value="ARQUIVO">Arquivo morto</option><option value="EDICAO">Edição ativa</option><option value="ENTREGA">Entregas</option></select>
+        </div>
+        <div class="form-group"><label>Capacidade (TB)</label><input id="d-cap" type="number" step="0.5" min="0.1" placeholder="ex: 2"></div>
+        <div class="form-group"><label>Uso atual (GB)</label><input id="d-uso" type="number" step="1" min="0" placeholder="ex: 500"></div>
+        <div class="form-group"><label>Cor</label><input id="d-cor" type="color" value="#2ecc8f"></div>
+      </div>
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <div class="form-group"><label>Observação</label><input id="d-obs" type="text" placeholder="ex: Fica no escritório, backup semanal"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addDrive()">Adicionar drive</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Drives cadastrados</span></div>
+    <div class="panel-body no-pad">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nome</th><th>Tipo</th><th>Função</th><th>Capacidade</th><th>Uso</th><th>Obs</th><th></th></tr></thead>
+          <tbody id="tbody-drives"></tbody>
+        </table>
+        <div id="drives-empty" class="empty-state" style="display:none">Nenhum drive cadastrado.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENTES ===== -->
+<div id="sec-clientes" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Clientes</div><div class="page-sub">Siglas usadas na nomenclatura de arquivos</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Adicionar cliente</span></div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Sigla (usada no nome do arquivo)</label><input id="c-sigla" type="text" placeholder="ex: NIKE" oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9_]/g,'')"></div>
+        <div class="form-group"><label>Nome completo</label><input id="c-nome" type="text" placeholder="ex: Nike Brasil Ltda"></div>
+      </div>
+      <button class="btn btn-primary" onclick="addCliente()">Adicionar cliente</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Clientes cadastrados</span></div>
+    <div class="panel-body no-pad">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sigla</th><th>Nome</th><th>Arquivos</th><th></th></tr></thead>
+          <tbody id="tbody-clientes"></tbody>
+        </table>
+        <div id="clientes-empty" class="empty-state" style="display:none">Nenhum cliente cadastrado.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<datalist id="lista-clientes"></datalist>
+<div id="toast" class="toast"></div>
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-title">Confirmar</div>
+    <div class="modal-msg" id="modal-msg"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-danger" id="modal-ok">Confirmar</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="file-import" accept=".json" style="display:none" onchange="processarImport(event)">
+
+<script defer>
+const DBKEY='rtz_arq_v2';
+let db={drives:[],clientes:[],historico:[]};
+let estado={tipo:'VIDEO',fase:'bruto',driveId:null};
+
+function load(){try{const d=localStorage.getItem(DBKEY);if(d)db=JSON.parse(d);}catch(e){}
+  ['drives','clientes','historico'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});}
+function save(){localStorage.setItem(DBKEY,JSON.stringify(db));}
+
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+
+let _cb=null;
+function confirmar(msg,cb){_cb=cb;document.getElementById('modal-msg').textContent=msg;document.getElementById('modal-ok').onclick=()=>{_cb&&_cb();fecharModal();};document.getElementById('modal').classList.add('open');}
+function fecharModal(){document.getElementById('modal').classList.remove('open');}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)fecharModal();});
+
+function goSec(id,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  btn.classList.add('active');
+  if(id==='historico')renderHistorico();
+  if(id==='explorador')renderExplorador();
+  if(id==='busca'){renderBusca();setTimeout(()=>document.getElementById('busca-big').focus(),80);}
+  if(id==='drives')renderDrives();
+  if(id==='clientes')renderClientes();
+  if(id==='gerar')renderDriveSelector();
+}
+
+function pad(n,l){return String(n).padStart(l,'0');}
+function fmt(s){return (s||'').toUpperCase().replace(/\s+/g,'_').replace(/[^A-Z0-9_\-\.]/g,'')||'INDEFINIDO';}
+function hoje(){return new Date().toISOString().slice(0,10);}
+function anomes(){const d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1,2);}
+
+const EXTS={VIDEO:['MXF','MP4','MOV','R3D','BRAW'],FOTO:['CR3','ARW','NEF','RAW','DNG','JPG','TIFF'],AUDIO:['WAV','AIFF','MP3','AAC','FLAC'],DESIGN:['AEP','PRPROJ','DRP','PSD','AI','INDD']};
+
+function setTipo(tipo,el){
+  estado.tipo=tipo;
+  document.querySelectorAll('.type-pill').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  gerarNome();
+}
+
+function setFase(fase,el){
+  estado.fase=fase;
+  document.querySelectorAll('.fase-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.fase-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('fp-'+fase).classList.add('active');
+  gerarNome();
+}
+
+function gerarNome(){
+  const{tipo,fase}=estado;
+  let nome='',caminho='';
+  const labelEl=document.getElementById('res-label');
+  const btnEl=document.getElementById('btn-copiar-nome');
+  if(fase==='bruto'){
+    const cli=fmt(document.getElementById('b-cli')?.value);
+    const proj=fmt(document.getElementById('b-proj')?.value);
+    const dataRaw=document.getElementById('b-data')?.value||hoje();
+    const [aaaa,mm,dd]=dataRaw.split('-');
+    const ddmmaa=(dd||'00')+(mm||'00')+(aaaa||'0000').slice(2);
+    const sub={VIDEO:'video',FOTO:'foto',AUDIO:'audio',DESIGN:'design'}[tipo]||'video';
+    nome=`${ddmmaa}-${cli}_${proj}_01_BRUTOS`;
+    caminho=`RTZ/CLIENTES/${cli}/${cli}_${proj}_${aaaa}-${mm}/01_BRUTOS/${sub}/`;
+    if(labelEl)labelEl.textContent='Pasta gerada';
+    if(btnEl)btnEl.textContent='Copiar pasta';
+  }else if(fase==='projeto'){
+    if(labelEl)labelEl.textContent='Nome gerado';
+    if(btnEl)btnEl.textContent='Copiar nome';
+    const cli=fmt(document.getElementById('p-cli')?.value);
+    const proj=fmt(document.getElementById('p-proj')?.value);
+    const tipoed=document.getElementById('p-tipo')?.value||'EDIT';
+    const soft=document.getElementById('p-soft')?.value||'prproj';
+    const ver='v'+pad(parseInt(document.getElementById('p-ver')?.value||1),2);
+    const st=document.getElementById('p-status')?.value;
+    nome=`${cli}_${proj}_${tipoed}_${ver}${st?'_'+st:''}.${soft}`;
+    const pasta={prproj:'premiere',aep:'after_effects',drp:'resolve',psd:'photoshop',ai:'illustrator',indd:'indesign'}[soft]||soft;
+    caminho=`RTZ/CLIENTES/${cli}/${cli}_${proj}_${anomes()}/02_PROJETO/${pasta}/`;
+  }else{
+    if(labelEl)labelEl.textContent='Nome gerado';
+    if(btnEl)btnEl.textContent='Copiar nome';
+    const cli=fmt(document.getElementById('e-cli')?.value);
+    const proj=fmt(document.getElementById('e-proj')?.value);
+    const peca=fmt(document.getElementById('e-peca')?.value||'ENTREGA');
+    const spec=document.getElementById('e-spec')?.value?'_'+fmt(document.getElementById('e-spec').value):'';
+    const ver='v'+pad(parseInt(document.getElementById('e-ver')?.value||1),2);
+    const st=document.getElementById('e-status')?.value||'FINAL';
+    const ext=document.getElementById('e-ext')?.value||'mp4';
+    nome=`${cli}_${proj}_${peca}${spec}_${ver}_${st}.${ext}`;
+    const sub={VIDEO:'video',FOTO:'foto',AUDIO:'audio',DESIGN:'design'}[tipo]||'video';
+    caminho=`RTZ/CLIENTES/${cli}/${cli}_${proj}_${anomes()}/03_ENTREGA/${sub}/`;
+  }
+  const drv=estado.driveId?db.drives.find(d=>d.id===estado.driveId):null;
+  const prefix=drv?drv.nome+'/':'[DRIVE]/';
+  const full=prefix+caminho+nome;
+  const resPath=document.getElementById('res-path');
+  const resName=document.getElementById('res-name');
+  const resFull=document.getElementById('res-full');
+  const resultado=document.getElementById('resultado');
+  if(!resPath||!resName||!resFull||!resultado)return;
+  resPath.textContent=prefix+caminho;
+  resName.textContent=nome;
+  resFull.textContent='Caminho completo: '+full;
+  resultado.style.display='';
+  resultado._nome=nome;
+  resultado._full=full;
+  resultado._caminho=caminho;
+  resultado._tipo=tipo;
+  resultado._fase=fase;
+  resultado._cli=nome.split('_')[0];
+  resultado._proj=nome.split('_')[1]||'';
+}
+
+function copiarNome(){navigator.clipboard.writeText(document.getElementById('resultado')._nome||'').then(()=>toast('Nome copiado!'));}
+function copiarFull(){navigator.clipboard.writeText(document.getElementById('resultado')._full||'').then(()=>toast('Caminho copiado!'));}
+
+function salvarHistorico(){
+  const r=document.getElementById('resultado');
+  if(!r._nome)return;
+  const drv=estado.driveId?db.drives.find(d=>d.id===estado.driveId):null;
+  db.historico.unshift({id:Date.now(),nome:r._nome,caminho:r._caminho,full:r._full,tipo:r._tipo,fase:r._fase,cliente:r._cli,projeto:r._proj,drive:drv?drv.nome:'',driveId:estado.driveId,data:new Date().toISOString()});
+  save();toast('Salvo no histórico!');
+}
+
+function renderDriveSelector(){
+  const el=document.getElementById('drive-selector');
+  if(!db.drives.length){el.innerHTML='<div style="color:var(--text3);font-size:13px;font-family:var(--mono)">Nenhum drive — vá em <b style="color:var(--text2)">Drives</b> para cadastrar.</div>';return;}
+  el.innerHTML=db.drives.map(d=>{
+    const pct=d.capacidade&&d.uso?Math.min(100,Math.round(d.uso/(d.capacidade*1024)*100)):0;
+    const isSSD=d.tipo.includes('SSD');
+    return `<div class="drive-card ${estado.driveId===d.id?'selected':''}" onclick="selecionarDrive('${d.id}',this)">
+      <div class="drive-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="${d.cor||'#2ecc8f'}" stroke-width="1.8" style="width:18px;height:18px">
+          ${isSSD?'<rect x="3" y="7" width="18" height="10" rx="2"/><circle cx="17" cy="12" r="1.5"/>':'<ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v12c0 1.66 4.03 3 9 3s9-1.34 9-3V6"/>'}
+        </svg>
+      </div>
+      <div class="drive-name">${d.nome}</div>
+      <div class="drive-type">${d.tipo}${d.capacidade?' · '+d.capacidade+'TB':''}</div>
+      <div class="drive-bar"><div class="drive-bar-fill" style="width:${pct}%;background:${pct>85?'var(--red)':pct>60?'var(--amber)':d.cor||'var(--green)'}"></div></div>
+      <div class="drive-usage">${pct?pct+'% usado':d.uso?d.uso+' GB':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function selecionarDrive(id,el){
+  estado.driveId=id;
+  document.querySelectorAll('.drive-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  gerarNome();
+}
+
+function renderHistorico(){
+  const busca=(document.getElementById('hist-busca')?.value||'').toLowerCase();
+  const ftipo=document.getElementById('hist-ftipo')?.value||'';
+  const ffase=document.getElementById('hist-ffase')?.value||'';
+  const fdrv=document.getElementById('hist-fdrv')?.value||'';
+  let items=db.historico.filter(h=>{
+    if(ftipo&&h.tipo!==ftipo)return false;
+    if(ffase&&h.fase!==ffase)return false;
+    if(fdrv&&h.drive!==fdrv)return false;
+    if(busca&&!h.nome.toLowerCase().includes(busca)&&!h.cliente.toLowerCase().includes(busca))return false;
+    return true;
+  });
+  const sel=document.getElementById('hist-fdrv');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Todos os drives</option>'+[...new Set(db.historico.map(h=>h.drive).filter(Boolean))].map(d=>`<option value="${d}"${d===cur?' selected':''}>${d}</option>`).join('');
+
+  const total=db.historico.length;
+  const clis=[...new Set(db.historico.map(h=>h.cliente))].length;
+  const drives=[...new Set(db.historico.map(h=>h.drive).filter(Boolean))].length;
+  const hj=db.historico.filter(h=>h.data&&h.data.slice(0,10)===hoje()).length;
+  document.getElementById('stats-hist').innerHTML=[
+    ['mc-green','mv-green','Total',total],
+    ['mc-blue','mv-blue','Clientes',clis],
+    ['mc-amber','mv-amber','Drives',drives],
+    ['mc-purple','mv-purple','Hoje',hj],
+  ].map(([mc,mv,l,v])=>`<div class="metric-card ${mc}"><div class="m-label">${l}</div><div class="m-value ${mv}">${v}</div></div>`).join('');
+
+  document.getElementById('hist-count').textContent=`${items.length} registro${items.length!==1?'s':''}`;
+  const tbody=document.getElementById('tbody-hist');
+  const empty=document.getElementById('hist-empty');
+  if(!items.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  const fb={bruto:'badge-blue',projeto:'badge-amber',entrega:'badge-green'};
+  const ft={VIDEO:'badge-blue',FOTO:'badge-green',AUDIO:'badge-amber',DESIGN:'badge-purple'};
+  tbody.innerHTML=items.map(h=>`<tr>
+    <td style="font-family:var(--mono);font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${h.nome}">${h.nome}</td>
+    <td><span class="badge badge-gray">${h.cliente}</span></td>
+    <td style="color:var(--text2);font-size:12px;font-family:var(--mono)">${h.drive||'—'}</td>
+    <td><span class="badge ${ft[h.tipo]||'badge-gray'}">${h.tipo}</span></td>
+    <td><span class="badge ${fb[h.fase]||'badge-gray'}">${h.fase}</span></td>
+    <td style="color:var(--text2);font-size:12px;font-family:var(--mono)">${h.data?new Date(h.data).toLocaleDateString('pt-BR'):''}</td>
+    <td>
+      <button class="del-btn" onclick="navigator.clipboard.writeText('${(h.full||h.nome).replace(/'/g,"\\'")}').then(()=>toast('Copiado!'))" title="Copiar caminho">⎘</button>
+      <button class="del-btn" onclick="delHistorico(${h.id})" title="Remover">×</button>
+    </td>
+  </tr>`).join('');
+}
+
+function delHistorico(id){confirmar('Remover este registro?',()=>{db.historico=db.historico.filter(h=>h.id!==id);save();renderHistorico();toast('Removido.');});}
+
+function renderExplorador(){
+  const funcoes={PRODUCAO:'Produção',BACKUP:'Backup',ARQUIVO:'Arquivo morto',EDICAO:'Edição ativa',ENTREGA:'Entregas'};
+  const total=db.historico.length;
+  const drivesComArq=[...new Set(db.historico.map(h=>h.driveId).filter(Boolean))].length;
+  const clis=[...new Set(db.historico.map(h=>h.cliente))].length;
+  document.getElementById('expl-stats').innerHTML=[
+    ['mc-green','mv-green','Drives cadastrados',db.drives.length],
+    ['mc-blue','mv-blue','Total de arquivos',total],
+    ['mc-amber','mv-amber','Clientes',clis],
+    ['mc-purple','mv-purple','Drives com conteúdo',drivesComArq],
+  ].map(([mc,mv,l,v])=>`<div class="metric-card ${mc}"><div class="m-label">${l}</div><div class="m-value ${mv}">${v}</div></div>`).join('');
+
+  const el=document.getElementById('expl-lista');
+  if(!db.drives.length){el.innerHTML='<div class="panel"><div class="empty-state">Nenhum drive cadastrado.</div></div>';return;}
+
+  const fb={bruto:'badge-blue',projeto:'badge-amber',entrega:'badge-green'};
+  const faseName={bruto:'Bruto',projeto:'Projeto',entrega:'Entrega'};
+
+  el.innerHTML=db.drives.map((drv,i)=>{
+    const arqs=db.historico.filter(h=>h.driveId===drv.id||h.drive===drv.nome);
+    const cliList=[...new Set(arqs.map(h=>h.cliente))];
+    const pct=drv.capacidade&&drv.uso?Math.min(100,Math.round(drv.uso/(drv.capacidade*1024)*100)):0;
+    const barColor=pct>85?'var(--red)':pct>60?'var(--amber)':drv.cor||'var(--green)';
+    const isSSD=drv.tipo.includes('SSD');
+
+    const bodyHtml=cliList.length?cliList.map(cli=>{
+      const ca=arqs.filter(h=>h.cliente===cli);
+      const cliObj=db.clientes.find(c=>c.sigla===cli);
+      const projs=[...new Set(ca.map(h=>h.projeto).filter(Boolean))];
+      const uid=`arqs_${drv.id}_${cli}`.replace(/[^a-z0-9_]/gi,'_');
+      return `<div class="expl-cli">
+        <div class="expl-cli-head">
+          <div class="avatar">${cli.slice(0,2)}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;font-family:var(--mono)">${cli}</div>
+            ${cliObj&&cliObj.nome?`<div style="font-size:11px;color:var(--text3)">${cliObj.nome}</div>`:''}
+          </div>
+          <span class="badge badge-gray">${ca.length} arq${ca.length!==1?'s':''}</span>
+        </div>
+        <div class="proj-chips">
+          ${projs.map(proj=>{
+            const pa=ca.filter(h=>h.projeto===proj);
+            const fases=[...new Set(pa.map(h=>h.fase))];
+            return `<div class="proj-chip">
+              <div class="proj-chip-name">${proj}</div>
+              <div class="proj-chip-badges">${fases.map(f=>`<span class="badge ${fb[f]||'badge-gray'}" style="font-size:9px">${faseName[f]||f}: ${pa.filter(h=>h.fase===f).length}</span>`).join('')}</div>
+            </div>`;
+          }).join('')}
+          ${!projs.length?`<span style="font-size:12px;color:var(--text3)">sem projeto definido</span>`:''}
+        </div>
+        <button class="toggle-arqs" onclick="toggleArqs('${uid}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px" id="ico_${uid}"><path d="M9 18l6-6-6-6"/></svg>
+          Ver ${ca.length} arquivo${ca.length!==1?'s':''}
+        </button>
+        <div class="arq-list" id="${uid}" style="display:none">
+          ${ca.map(h=>`<div class="arq-row">
+            <span class="badge ${fb[h.fase]||'badge-gray'}" style="font-size:9px;flex-shrink:0">${faseName[h.fase]||h.fase}</span>
+            <span class="mono" title="${h.nome}">${h.nome}</span>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0">${h.data?new Date(h.data).toLocaleDateString('pt-BR'):''}</span>
+            <button class="copy-link" onclick="navigator.clipboard.writeText('${(h.full||h.nome).replace(/'/g,"\\'")}').then(()=>toast('Copiado!'))">copiar</button>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }).join(''):`<div style="padding:16px 0;text-align:center;color:var(--text3);font-family:var(--mono);font-size:12px">nenhum arquivo registrado neste drive</div>`;
+
+    return `<div class="expl-drive">
+      <div class="expl-drive-head" id="dh_${drv.id}" onclick="toggleDrive('${drv.id}')">
+        <div style="width:38px;height:38px;border-radius:var(--radius);background:var(--bg3);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg viewBox="0 0 24 24" fill="none" stroke="${drv.cor||'#2ecc8f'}" stroke-width="1.8" style="width:20px;height:20px">
+            ${isSSD?'<rect x="3" y="7" width="18" height="10" rx="2"/><circle cx="17" cy="12" r="1.5"/>':'<ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v12c0 1.66 4.03 3 9 3s9-1.34 9-3V6"/>'}
+          </svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:15px;font-weight:700">${drv.nome}</span>
+            <span class="badge badge-gray">${drv.tipo}</span>
+            <span class="badge badge-gray">${funcoes[drv.funcao]||drv.funcao}</span>
+          </div>
+          ${drv.obs?`<div style="font-size:11px;color:var(--text3);margin-top:2px;font-family:var(--mono)">${drv.obs}</div>`:''}
+          <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+            <div style="flex:1;height:3px;background:var(--bg);border-radius:2px;overflow:hidden">
+              <div style="height:3px;width:${pct}%;background:${barColor};border-radius:2px"></div>
+            </div>
+            <span style="font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0">${drv.uso||0} GB / ${drv.capacidade||'?'} TB${pct?' ('+pct+'%)':''}</span>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;margin-left:12px">
+          <div style="font-size:20px;font-weight:700;font-family:var(--mono);color:${drv.cor||'var(--green)'}">${arqs.length}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${cliList.length} cliente${cliList.length!==1?'s':''}</div>
+        </div>
+        <svg id="arr_${drv.id}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;color:var(--text3);flex-shrink:0;transition:transform .2s"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+      <div class="expl-body hidden" id="db_${drv.id}">${bodyHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+function toggleDrive(id){
+  const head=document.getElementById('dh_'+id);
+  const body=document.getElementById('db_'+id);
+  const arr=document.getElementById('arr_'+id);
+  const open=!body.classList.contains('hidden');
+  body.classList.toggle('hidden',open);
+  head.classList.toggle('open',!open);
+  arr.style.transform=open?'':'rotate(90deg)';
+}
+
+function toggleArqs(uid,btn){
+  const el=document.getElementById(uid);
+  const ico=document.getElementById('ico_'+uid);
+  const open=el.style.display!=='none';
+  el.style.display=open?'none':'flex';
+  el.style.flexDirection='column';
+  if(ico)ico.style.transform=open?'':'rotate(90deg)';
+}
+
+function renderBusca(){
+  const q=(document.getElementById('busca-big')?.value||'').trim().toLowerCase();
+  const el=document.getElementById('busca-result');
+
+  if(!q){
+    if(!db.clientes.length){el.innerHTML='<div class="panel"><div class="empty-state">Nenhum cliente cadastrado.</div></div>';return;}
+    el.innerHTML=`<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Todos os clientes</div>`+
+    db.clientes.map(c=>{
+      const cnt=db.historico.filter(h=>h.cliente===c.sigla).length;
+      const drives=[...new Set(db.historico.filter(h=>h.cliente===c.sigla).map(h=>h.drive).filter(Boolean))];
+      return `<div class="cli-list-item" onclick="document.getElementById('busca-big').value='${c.sigla}';renderBusca()">
+        <div class="avatar-lg">${c.sigla.slice(0,2)}</div>
+        <div class="cli-info">
+          <div class="cli-sigla">${c.sigla}</div>
+          <div class="cli-nome">${c.nome||'—'}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:13px;font-weight:700;font-family:var(--mono);color:var(--green)">${cnt}</div>
+          <div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${cnt===1?'arquivo':'arquivos'}</div>
+          ${drives.length?`<div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px">${drives.slice(0,2).join(', ')}${drives.length>2?' +'+(drives.length-2):''}</div>`:''}
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:14px;height:14px;color:var(--text3)"><path d="M9 18l6-6-6-6"/></svg>
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  const arqs=db.historico.filter(h=>
+    h.cliente.toLowerCase().includes(q)||(h.projeto||'').toLowerCase().includes(q)||h.nome.toLowerCase().includes(q)||(db.clientes.find(c=>c.sigla===h.cliente)?.nome||'').toLowerCase().includes(q)
+  );
+
+  if(!arqs.length){el.innerHTML=`<div class="panel"><div class="empty-state">Nenhum resultado para "<span style="color:var(--text)">${q}</span>".</div></div>`;return;}
+
+  const cliSet=[...new Set(arqs.map(h=>h.cliente))];
+  const drvSet=[...new Set(arqs.map(h=>h.drive).filter(Boolean))];
+  const projSet=[...new Set(arqs.map(h=>h.projeto).filter(Boolean))];
+
+  const stats=`<div class="cards-grid" style="margin-bottom:20px">
+    ${[['mc-green','mv-green','Arquivos',arqs.length],['mc-blue','mv-blue','Clientes',cliSet.length],['mc-amber','mv-amber','Drives',drvSet.length],['mc-purple','mv-purple','Projetos',projSet.length]].map(([mc,mv,l,v])=>`<div class="metric-card ${mc}"><div class="m-label">${l}</div><div class="m-value ${mv}">${v}</div></div>`).join('')}
+  </div>`;
+
+  function hl(str){return str.replace(new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi'),m=>`<mark>${m}</mark>`);}
+  const fb={bruto:'badge-blue',projeto:'badge-amber',entrega:'badge-green'};
+  const ft={VIDEO:'badge-blue',FOTO:'badge-green',AUDIO:'badge-amber',DESIGN:'badge-purple'};
+
+  const porDrive=drvSet.length?drvSet.map(drvNome=>{
+    const da=arqs.filter(h=>h.drive===drvNome);
+    const drvObj=db.drives.find(d=>d.nome===drvNome);
+    const isSSD=drvObj?.tipo?.includes('SSD');
+    return `<div class="busca-drive-block">
+      <div class="busca-drive-head">
+        <svg viewBox="0 0 24 24" fill="none" stroke="${drvObj?.cor||'#2ecc8f'}" stroke-width="1.8" style="width:16px;height:16px;flex-shrink:0">
+          ${isSSD?'<rect x="3" y="7" width="18" height="10" rx="2"/>':'<ellipse cx="12" cy="6" rx="9" ry="3"/><path d="M3 6v12c0 1.66 4.03 3 9 3s9-1.34 9-3V6"/>'}
+        </svg>
+        <span style="font-size:13px;font-weight:700;font-family:var(--mono)">${drvNome}</span>
+        <span class="badge badge-gray" style="margin-left:auto">${da.length} arquivo${da.length!==1?'s':''}</span>
+      </div>
+      ${da.map(h=>`<div class="busca-arq-row">
+        <span class="badge ${fb[h.fase]||'badge-gray'}" style="font-size:9px;flex-shrink:0">${h.fase}</span>
+        <span class="badge ${ft[h.tipo]||'badge-gray'}" style="font-size:9px;flex-shrink:0">${h.tipo}</span>
+        <span class="busca-arq-name" title="${h.nome}">${hl(h.nome)}</span>
+        <span style="font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0">${h.data?new Date(h.data).toLocaleDateString('pt-BR'):''}</span>
+        <button class="copy-link" onclick="navigator.clipboard.writeText('${(h.full||h.nome).replace(/'/g,"\\'")}').then(()=>toast('Copiado!'))">copiar</button>
+      </div>`).join('')}
+    </div>`;
+  }).join(''):'';
+
+  const semDrive=arqs.filter(h=>!h.drive);
+  const extraSD=semDrive.length?`<div class="busca-drive-block" style="margin-top:8px">
+    <div class="busca-drive-head"><span style="font-size:12px;color:var(--text3);font-family:var(--mono)">sem drive associado (${semDrive.length})</span></div>
+    ${semDrive.map(h=>`<div class="busca-arq-row"><span class="busca-arq-name">${h.nome}</span></div>`).join('')}
+  </div>`:'';
+
+  el.innerHTML=stats+`<div class="result-section-title">Resultados por drive</div>`+porDrive+extraSD;
+}
+
+function addDrive(){
+  const nome=document.getElementById('d-nome').value.trim().toUpperCase().replace(/\s+/g,'_');
+  if(!nome){toast('Informe o nome do drive');return;}
+  const tipo=document.getElementById('d-tipo').value;
+  const func=document.getElementById('d-func').value;
+  const cap=parseFloat(document.getElementById('d-cap').value)||0;
+  const uso=parseFloat(document.getElementById('d-uso').value)||0;
+  const cor=document.getElementById('d-cor').value;
+  const obs=document.getElementById('d-obs').value.trim();
+  db.drives.push({id:'drv_'+Date.now(),nome,tipo,funcao:func,capacidade:cap,uso,cor,obs,criado:new Date().toISOString()});
+  save();['d-nome','d-cap','d-uso','d-obs'].forEach(i=>document.getElementById(i).value='');
+  renderDrives();toast('Drive adicionado!');
+}
+
+function renderDrives(){
+  const tbody=document.getElementById('tbody-drives');
+  const empty=document.getElementById('drives-empty');
+  const fn={PRODUCAO:'Produção',BACKUP:'Backup',ARQUIVO:'Arquivo morto',EDICAO:'Edição ativa',ENTREGA:'Entregas'};
+  if(!db.drives.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=db.drives.map(d=>`<tr>
+    <td style="font-family:var(--mono);font-weight:600;display:flex;align-items:center;gap:8px">
+      <span style="width:8px;height:8px;border-radius:50%;background:${d.cor||'#2ecc8f'};display:inline-block;flex-shrink:0;box-shadow:0 0 6px ${d.cor||'#2ecc8f'}44"></span>
+      ${d.nome}
+    </td>
+    <td><span class="badge badge-gray">${d.tipo}</span></td>
+    <td><span class="badge badge-gray">${fn[d.funcao]||d.funcao}</span></td>
+    <td style="font-family:var(--mono);font-size:12px;color:var(--text2)">${d.capacidade||'—'} TB</td>
+    <td style="font-family:var(--mono);font-size:12px;color:var(--text2)">${d.uso||'—'} GB</td>
+    <td style="font-size:12px;color:var(--text2)">${d.obs||'—'}</td>
+    <td><button class="del-btn" onclick="delDrive('${d.id}')">×</button></td>
+  </tr>`).join('');
+}
+
+function delDrive(id){confirmar('Remover este drive?',()=>{db.drives=db.drives.filter(d=>d.id!==id);save();renderDrives();toast('Removido.');});}
+
+function addCliente(){
+  const sigla=document.getElementById('c-sigla').value.trim();
+  const nome=document.getElementById('c-nome').value.trim();
+  if(!sigla){toast('Informe a sigla');return;}
+  if(db.clientes.find(c=>c.sigla===sigla)){toast('Sigla já existe');return;}
+  db.clientes.push({id:'cli_'+Date.now(),sigla,nome,criado:new Date().toISOString()});
+  save();renderClientes();atualizarDatalist();toast('Cliente adicionado!');
+  document.getElementById('c-sigla').value='';
+  document.getElementById('c-nome').value='';
+}
+
+function renderClientes(){
+  const tbody=document.getElementById('tbody-clientes');
+  const empty=document.getElementById('clientes-empty');
+  if(!db.clientes.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=db.clientes.map(c=>{
+    const cnt=db.historico.filter(h=>h.cliente===c.sigla).length;
+    return `<tr>
+      <td style="font-family:var(--mono);font-weight:700">${c.sigla}</td>
+      <td style="color:var(--text2)">${c.nome||'—'}</td>
+      <td><span class="badge badge-green">${cnt} arquivo${cnt!==1?'s':''}</span></td>
+      <td><button class="del-btn" onclick="delCliente('${c.id}')">×</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function delCliente(id){confirmar('Remover este cliente?',()=>{db.clientes=db.clientes.filter(c=>c.id!==id);save();renderClientes();atualizarDatalist();toast('Removido.');});}
+
+function atualizarDatalist(){
+  document.getElementById('lista-clientes').innerHTML=db.clientes.map(c=>`<option value="${c.sigla}">${c.nome||''}</option>`).join('');
+}
+
+function exportarCSV(){
+  if(!db.historico.length){toast('Nenhum dado');return;}
+  const hdr='Nome,Cliente,Projeto,Tipo,Fase,Drive,CaminhoCompleto,Data';
+  const rows=db.historico.map(h=>[h.nome,h.cliente,h.projeto||'',h.tipo,h.fase,h.drive||'',h.full||'',h.data?new Date(h.data).toLocaleDateString('pt-BR'):''].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const blob=new Blob(['\uFEFF'+[hdr,...rows].join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='RTZ_arquivos_'+hoje()+'.csv';a.click();URL.revokeObjectURL(url);
+  toast('CSV exportado!');
+}
+
+function exportarDados(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download='RTZ_backup_'+hoje()+'.json';a.click();URL.revokeObjectURL(url);
+  toast('Backup exportado!');
+}
+
+function importarDados(){document.getElementById('file-import').click();}
+
+function processarImport(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{try{
+    const novo=JSON.parse(e.target.result);
+    if(!novo.drives||!novo.historico){toast('Arquivo inválido');return;}
+    confirmar(`Importar ${novo.historico.length} registros? Os dados atuais serão substituídos.`,()=>{db=novo;save();atualizarDatalist();renderDriveSelector();toast('Importado!');});
+  }catch(err){toast('Erro ao importar');}};
+  r.readAsText(file);ev.target.value='';
+}
+
+
+
+// ── GOOGLE DRIVE API ─────────────────────────────────────────
+// INSTRUÇÃO: substitua o valor abaixo pelo seu Client ID do Google Cloud
+const DRIVE_CLIENT_ID = '251018833740-pr9jp8qsbk3qj7bkbesh14hu8p12r6ja.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FOLDER_NAME = 'RTZ_Backups';
+const DRIVE_FILENAME = 'RTZ_Arquivos_backup.json';
+let driveToken = null;
+let driveFolderId = null;
+
+function driveSetStatus(msg, tipo) {
+  const el = document.getElementById('drive-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'drive-status ' + (tipo || '');
+}
+
+async function driveAutenticar() {
+  return new Promise((resolve, reject) => {
+    if (!DRIVE_CLIENT_ID || DRIVE_CLIENT_ID.includes('SEU_CLIENT')) {
+      reject(new Error('Client ID não configurado. Veja as instruções.'));
+      return;
+    }
+    const w = window.open(
+      `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `client_id=${DRIVE_CLIENT_ID}&redirect_uri=${encodeURIComponent(location.origin+location.pathname)}&` +
+      `response_type=token&scope=${encodeURIComponent(DRIVE_SCOPE)}&prompt=select_account`,
+      'google-auth', 'width=500,height=600'
+    );
+    const timer = setInterval(() => {
+      try {
+        if (w.closed) { clearInterval(timer); reject(new Error('Login cancelado')); return; }
+        const hash = w.location.hash;
+        if (hash && hash.includes('access_token')) {
+          clearInterval(timer);
+          w.close();
+          const params = new URLSearchParams(hash.slice(1));
+          driveToken = params.get('access_token');
+          resolve(driveToken);
+        }
+      } catch(e) {}
+    }, 300);
+  });
+}
+
+async function driveObterOuCriarPasta() {
+  // Busca pasta RTZ_Backups
+  const searchRes = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FOLDER_NAME}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id,name)`,
+    { headers: { Authorization: `Bearer ${driveToken}` } }
+  );
+  const searchData = await searchRes.json();
+  if (searchData.files && searchData.files.length > 0) {
+    driveFolderId = searchData.files[0].id;
+    return driveFolderId;
+  }
+  // Cria pasta se não existe
+  const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${driveToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: DRIVE_FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  const createData = await createRes.json();
+  driveFolderId = createData.id;
+  return driveFolderId;
+}
+
+async function driveSalvar() {
+  try {
+    driveSetStatus('Conectando ao Google...', 'loading');
+    if (!driveToken) await driveAutenticar();
+    driveSetStatus('Localizando pasta RTZ_Backups...', 'loading');
+    await driveObterOuCriarPasta();
+    // Verifica se arquivo já existe na pasta
+    const searchRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id)`,
+      { headers: { Authorization: `Bearer ${driveToken}` } }
+    );
+    const searchData = await searchRes.json();
+    const payload = {versao:"rtz-arq-v1",exportado:new Date().toISOString(),db};
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const form = new FormData();
+    form.append('metadata', new Blob([JSON.stringify(
+      searchData.files?.length
+        ? { name: DRIVE_FILENAME }
+        : { name: DRIVE_FILENAME, parents: [driveFolderId] }
+    )], { type: 'application/json' }));
+    form.append('file', blob);
+    const method = searchData.files?.length ? 'PATCH' : 'POST';
+    const url = searchData.files?.length
+      ? `https://www.googleapis.com/upload/drive/v3/files/${searchData.files[0].id}?uploadType=multipart`
+      : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    driveSetStatus('Salvando...', 'loading');
+    const res = await fetch(url, { method, headers: { Authorization: `Bearer ${driveToken}` }, body: form });
+    if (res.ok) {
+      driveSetStatus('✓ Salvo em RTZ_Backups no Drive!', 'ok');
+      document.getElementById('drive-save-btn').style.display = '';
+    } else {
+      throw new Error('Falha ao salvar');
+    }
+  } catch(e) {
+    driveSetStatus('✗ ' + e.message, 'err');
+  }
+}
+
+async function driveCarregar() {
+  try {
+    driveSetStatus('Conectando ao Google...', 'loading');
+    if (!driveToken) await driveAutenticar();
+    driveSetStatus('Buscando backup...', 'loading');
+    await driveObterOuCriarPasta();
+    const searchRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,
+      { headers: { Authorization: `Bearer ${driveToken}` } }
+    );
+    const searchData = await searchRes.json();
+    if (!searchData.files || !searchData.files.length) {
+      driveSetStatus('Nenhum backup ainda — use "Salvar no Drive" após cadastrar dados.', 'err');
+      document.getElementById('startup-overlay').classList.add('gone');
+      return;
+    }
+    const fileId = searchData.files[0].id;
+    const modTime = new Date(searchData.files[0].modifiedTime).toLocaleString('pt-BR');
+    driveSetStatus(`Baixando backup de ${modTime}...`, 'loading');
+    const dlRes = await fetch(
+      `https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,
+      { headers: { Authorization: `Bearer ${driveToken}` } }
+    );
+    const data = await dlRes.json();
+        if(data.db){db=data.db;}else if(data.drives||data.historico){db=data;}
+    ['drives','clientes','historico'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
+    save();atualizarDatalist();renderDriveSelector();
+    document.getElementById('startup-overlay').classList.add('gone');
+    document.getElementById('drive-save-btn').style.display = '';
+    driveSetStatus('✓ Backup de ' + modTime + ' carregado!', 'ok');
+  } catch(e) {
+    driveSetStatus('✗ ' + e.message, 'err');
+  }
+}
+
+// ── STARTUP / AUTOSAVE ───────────────────────────────────────
+function startupCarregarJSON(ev){
+  const file=ev.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      startupAplicarDados(d);
+      document.getElementById('startup-overlay').classList.add('gone');
+      toast('Backup carregado!');
+    }catch(err){toast('Arquivo inválido');startupPularBackup();}
+  };
+  r.readAsText(file);ev.target.value='';
+}
+function startupPularBackup(){
+  document.getElementById('startup-overlay').classList.add('gone');
+}
+function startupAplicarDados(d){
+  if(d.versao&&d.db){
+    db=d.db;
+  } else if(d.drives||d.historico){
+    db=d;
+  } else {toast('Formato desconhecido');return;}
+  ['drives','clientes','historico'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
+  save();atualizarDatalist();renderDriveSelector();toast('Dados restaurados!');
+}
+
+// ── DRIVE: carregar a partir da sidebar (fora do startup) ────
+async function driveCarregarSidebar(){
+  try{
+    if(!driveToken) await driveAutenticar();
+    await driveObterOuCriarPasta();
+    const searchRes=await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,
+      {headers:{Authorization:`Bearer ${driveToken}`}}
+    );
+    const sd=await searchRes.json();
+    if(!sd.files||!sd.files.length){driveSetStatus('Nenhum backup no Drive ainda','err');return;}
+    const fileId=sd.files[0].id;
+    const mod=new Date(sd.files[0].modifiedTime).toLocaleString('pt-BR');
+    if(!confirm(`Restaurar backup do Drive salvo em ${mod}?\nOs dados atuais serão substituídos.`))return;
+    const dlRes=await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`,{headers:{Authorization:`Bearer ${driveToken}`}});
+    const data=await dlRes.json();
+    if(data.db){db=data.db;}else if(data.drives||data.historico){db=data;}
+    ['drives','clientes','historico'].forEach(k=>{if(!Array.isArray(db[k]))db[k]=[];});
+    save();atualizarDatalist();renderDriveSelector();
+    driveSetStatus('✓ Dados restaurados do Drive!','ok');
+  }catch(e){driveSetStatus('✗ '+e.message,'err');}
+}
+
+// ── Auto-salva no Drive ao fechar (sem download local) ───────
+async function autoSaveDriveAoSair(){
+  if(!driveToken)return; // só salva se já autenticou na sessão
+  try{
+    await driveObterOuCriarPasta();
+    const payload={versao:"rtz-arq-v1",exportado:new Date().toISOString(),db};
+    const searchRes=await fetch(
+      `https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id)`,
+      {headers:{Authorization:`Bearer ${driveToken}`}}
+    );
+    const sd=await searchRes.json();
+    const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+    const form=new FormData();
+    form.append('metadata',new Blob([JSON.stringify(
+      sd.files?.length?{name:DRIVE_FILENAME}:{name:DRIVE_FILENAME,parents:[driveFolderId]}
+    )],{type:'application/json'}));
+    form.append('file',blob);
+    const method=sd.files?.length?'PATCH':'POST';
+    const url=sd.files?.length
+      ?`https://www.googleapis.com/upload/drive/v3/files/${sd.files[0].id}?uploadType=multipart`
+      :'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+    await fetch(url,{method,headers:{Authorization:`Bearer ${driveToken}`},body:form});
+  }catch(e){console.warn('Drive autosave falhou:',e);}
+}
+window.addEventListener('pagehide',autoSaveDriveAoSair);
+window.addEventListener('beforeunload',autoSaveDriveAoSair);
+
+
+load();
+atualizarDatalist();
+renderDriveSelector();
+document.getElementById('b-data').value=hoje();
+document.getElementById('footer-date').textContent=new Date().toLocaleDateString('pt-BR');
+estado.tipo='VIDEO';
+</script>
+</body>
+</html>
