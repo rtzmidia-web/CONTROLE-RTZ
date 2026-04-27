@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTZ Mídia — Plataforma</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0e0e0f;--bg2:#161618;--bg3:#1e1e21;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;
+  --green:#2ecc8f;--green-bg:rgba(46,204,143,0.10);--green-border:rgba(46,204,143,0.25);
+  --blue:#5b9cf6;--blue-bg:rgba(91,156,246,0.10);--blue-border:rgba(91,156,246,0.25);
+  --amber:#e8a030;--amber-bg:rgba(232,160,48,0.10);--amber-border:rgba(232,160,48,0.25);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.10);--purple-border:rgba(167,139,250,0.25);
+  --coral:#f97b6b;--coral-bg:rgba(249,123,107,0.10);--coral-border:rgba(249,123,107,0.25);
+  --red:#e05c5c;--red-bg:rgba(224,92,92,0.10);
+  --radius:12px;--radius-lg:18px;--radius-xl:24px;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;overflow:hidden;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px;}
+
+/* ── HOME ── */
+.home{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);transition:opacity .35s,transform .35s;z-index:10;}
+.home.hidden{opacity:0;pointer-events:none;transform:scale(.98);}
+
+.home-top{padding:28px 40px 0;display:flex;align-items:center;justify-content:space-between;}
+.logo-mark{display:flex;align-items:center;gap:14px;}
+.logo-glyph{width:38px;height:38px;border-radius:10px;background:var(--green);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#0a1a12;letter-spacing:-.02em;box-shadow:0 0 24px rgba(46,204,143,.35);}
+.logo-text{font-size:18px;font-weight:700;letter-spacing:-.02em;}
+.logo-sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:1px;}
+.home-date{font-size:12px;font-family:var(--mono);color:var(--text3);}
+
+.home-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 40px 0;}
+.hero-label{font-size:11px;font-family:var(--mono);color:var(--text3);letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;}
+.hero-title{font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-.03em;text-align:center;line-height:1.05;margin-bottom:10px;}
+.hero-title span{color:var(--green);}
+.hero-sub{font-size:15px;color:var(--text2);text-align:center;margin-bottom:48px;line-height:1.6;}
+
+.modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;width:100%;max-width:960px;}
+.mod-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;display:flex;flex-direction:column;gap:14px;}
+.mod-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;transition:opacity .2s;}
+.mod-card:hover{transform:translateY(-3px);border-color:var(--border2);}
+.mod-card:hover::before{opacity:1;}
+.mod-card.coming{opacity:.45;cursor:default;}
+.mod-card.coming:hover{transform:none;border-color:var(--border);}
+.mod-icon{width:42px;height:42px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.mod-top{display:flex;align-items:flex-start;justify-content:space-between;}
+.mod-badge{font-size:10px;font-family:var(--mono);font-weight:600;padding:2px 8px;border-radius:99px;}
+.mod-title{font-size:16px;font-weight:700;margin-bottom:4px;letter-spacing:-.01em;}
+.mod-desc{font-size:12px;color:var(--text2);line-height:1.6;}
+.mod-footer{display:flex;align-items:center;justify-content:space-between;margin-top:auto;}
+.mod-version{font-size:10px;font-family:var(--mono);color:var(--text3);}
+.mod-arrow{font-size:16px;color:var(--text3);transition:transform .2s,color .2s;}
+.mod-card:hover .mod-arrow{transform:translateX(3px);}
+
+.home-footer{padding:18px 40px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.footer-copy{font-size:11px;color:var(--text3);font-family:var(--mono);}
+.footer-version{font-size:11px;color:var(--text3);font-family:var(--mono);}
+
+/* ── APP SHELL (quando um módulo está aberto) ── */
+.app-shell{position:fixed;inset:0;display:flex;flex-direction:column;background:var(--bg);opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .3s,transform .3s;z-index:20;}
+.app-shell.active{opacity:1;pointer-events:all;transform:translateY(0);}
+
+.app-bar{display:flex;align-items:center;gap:0;background:var(--bg2);border-bottom:1px solid var(--border);height:46px;flex-shrink:0;padding:0 16px;gap:12px;}
+.app-bar-back{display:flex;align-items:center;gap:7px;background:none;border:none;color:var(--text2);cursor:pointer;font-family:var(--font);font-size:13px;font-weight:500;padding:6px 10px;border-radius:var(--radius);transition:all .15s;}
+.app-bar-back:hover{background:var(--bg3);color:var(--text);}
+.app-bar-sep{width:1px;height:20px;background:var(--border2);}
+.app-bar-icon{width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.app-bar-name{font-size:14px;font-weight:600;letter-spacing:-.01em;}
+.app-bar-badge{font-size:10px;font-family:var(--mono);font-weight:600;padding:2px 7px;border-radius:99px;margin-left:2px;}
+.app-bar-right{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.app-bar-btn{background:none;border:1px solid var(--border2);color:var(--text2);cursor:pointer;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:var(--radius);transition:all .15s;}
+.app-bar-btn:hover{color:var(--text);border-color:var(--border2);}
+.app-bar-btn.green{border-color:var(--green-border);color:var(--green);}
+.app-bar-btn.green:hover{background:var(--green-bg);}
+
+.app-frame{flex:1;border:none;width:100%;background:var(--bg);}
+
+/* loading overlay */
+.frame-loader{position:absolute;inset:46px 0 0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;transition:opacity .3s;z-index:5;}
+.frame-loader.hidden{opacity:0;pointer-events:none;}
+.loader-spinner{width:32px;height:32px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loader-txt{font-size:12px;font-family:var(--mono);color:var(--text3);}
+
+/* notif bar */
+.notif{position:fixed;top:54px;right:16px;background:var(--bg2);border:1px solid var(--green-border);color:var(--green);font-family:var(--mono);font-size:12px;padding:9px 16px;border-radius:var(--radius);opacity:0;transform:translateY(-6px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;}
+.notif.show{opacity:1;transform:translateY(0);}
+
+/* Kbd hint on home */
+.kbd{display:inline-flex;align-items:center;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:1px 6px;font-size:10px;font-family:var(--mono);color:var(--text3);}
+
+@media(max-width:640px){
+  .home-top{padding:16px 20px 0;}
+  .home-hero{padding:16px 20px 0;}
+  .modules-grid{grid-template-columns:1fr;}
+  .home-footer{padding:14px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ HOME ═══════════════════════════════════════ -->
+<div class="home" id="home">
+  <div class="home-top">
+    <div class="logo-mark">
+      <div class="logo-glyph">RTZ</div>
+      <div>
+        <div class="logo-text">RTZ Mídia</div>
+        <div class="logo-sub">// plataforma interna</div>
+      </div>
+    </div>
+    <div class="home-date" id="home-date"></div>
+  </div>
+
+  <div class="home-hero">
+    <div class="hero-label">Bem-vindo à plataforma</div>
+    <div class="hero-title">Tudo da RTZ<br><span>em um lugar.</span></div>
+    <div class="hero-sub">Selecione um módulo para começar</div>
+
+    <div class="modules-grid" id="modules-grid"></div>
+  </div>
+
+  <div class="home-footer">
+    <div class="footer-copy">RTZ Mídia · Plataforma interna · Uso exclusivo da equipe</div>
+    <div class="footer-version" id="footer-version"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════ APP SHELL ═══════════════════════════════════════ -->
+<div class="app-shell" id="app-shell">
+  <div class="app-bar" id="app-bar">
+    <button class="app-bar-back" onclick="voltarHome()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      Início
+    </button>
+    <div class="app-bar-sep"></div>
+    <div class="app-bar-icon" id="bar-icon"></div>
+    <div class="app-bar-name" id="bar-name"></div>
+    <span class="app-bar-badge" id="bar-badge"></span>
+    <div class="app-bar-right">
+      <button class="app-bar-btn" onclick="recarregarModulo()">↺ Recarregar</button>
+      <button class="app-bar-btn green" id="bar-fullscreen" onclick="toggleFullscreen()">⤢ Tela cheia</button>
+    </div>
+  </div>
+
+  <div class="frame-loader" id="frame-loader">
+    <div class="loader-spinner"></div>
+    <div class="loader-txt" id="loader-txt">Carregando módulo...</div>
+  </div>
+
+  <iframe class="app-frame" id="app-frame" src="" onload="frameLoaded()"></iframe>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// REGISTRO DE MÓDULOS
+// Para adicionar um novo sistema: insira um objeto nesta lista.
+// ══════════════════════════════════════════════════════════════
+const MODULOS = [
+  {
+    id: 'arquivos',
+    titulo: 'Nomenclatura & Arquivos',
+    desc: 'Gere nomes de pastas e arquivos no padrão RTZ, gerencie drives e registre o log de ingestão de cartões.',
+    icone: '◫',
+    cor: 'var(--blue)',
+    corBg: 'var(--blue-bg)',
+    corBorder: 'var(--blue-border)',
+    badge: 'Produção',
+    badgeCor: 'var(--blue-bg)',
+    badgeText: 'var(--blue)',
+    versao: 'v1.2',
+    arquivo: 'RTZ_Arquivos.html',
+    status: 'ativo',
+  },
+  {
+    id: 'pops',
+    titulo: 'Central de POPs',
+    desc: 'Procedimentos Operacionais Padrão por área. Execute checklists e registre histórico de cada procedimento.',
+    icone: '◈',
+    cor: 'var(--green)',
+    corBg: 'var(--green-bg)',
+    corBorder: 'var(--green-border)',
+    badge: 'Qualidade',
+    badgeCor: 'var(--green-bg)',
+    badgeText: 'var(--green)',
+    versao: 'v1.1',
+    arquivo: 'RTZ_Central_POPs.html',
+    status: 'ativo',
+  },
+  {
+    id: 'financeiro',
+    titulo: 'Financeiro & Caixa',
+    desc: 'Controle de entradas, saídas, contratos e relatórios financeiros por centro de custo.',
+    icone: '◎',
+    cor: 'var(--amber)',
+    corBg: 'var(--amber-bg)',
+    corBorder: 'var(--amber-border)',
+    badge: 'Financeiro',
+    badgeCor: 'var(--amber-bg)',
+    badgeText: 'var(--amber)',
+    versao: 'v2.0',
+    arquivo: 'RTZ_Caixa.html',
+    status: 'ativo',
+  },
+  {
+    id: 'crm',
+    titulo: 'CRM & Clientes',
+    desc: 'Gestão de leads, pipeline comercial, histórico de projetos e follow-ups por cliente.',
+    icone: '⊕',
+    cor: 'var(--purple)',
+    corBg: 'var(--purple-bg)',
+    corBorder: 'var(--purple-border)',
+    badge: 'Comercial',
+    badgeCor: 'var(--purple-bg)',
+    badgeText: 'var(--purple)',
+    versao: 'em breve',
+    arquivo: '',
+    status: 'coming',
+  },
+  {
+    id: 'producao',
+    titulo: 'Gestão de Projetos',
+    desc: 'Kanban de projetos, cronogramas, checklists de set e acompanhamento de entregas.',
+    icone: '▤',
+    cor: 'var(--coral)',
+    corBg: 'var(--coral-bg)',
+    corBorder: 'var(--coral-border)',
+    badge: 'Produção',
+    badgeCor: 'var(--coral-bg)',
+    badgeText: 'var(--coral)',
+    versao: 'em breve',
+    arquivo: '',
+    status: 'coming',
+  },
+];
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let moduloAtivo = null;
+
+// ══════════════════════════════════════════════════════════════
+// RENDER HOME
+// ══════════════════════════════════════════════════════════════
+function renderHome() {
+  const grid = document.getElementById('modules-grid');
+  grid.innerHTML = MODULOS.map(m => {
+    const coming = m.status === 'coming';
+    return `
+    <div class="mod-card${coming ? ' coming' : ''}"
+         onclick="${coming ? '' : `abrirModulo('${m.id}')`}"
+         style="--mc:${m.cor};border-color:${coming ? 'var(--border)' : 'var(--border)'}">
+      <div style="position:absolute;top:0;left:0;right:0;height:2px;background:${m.cor};opacity:${coming?'.3':'1'}"></div>
+      <div class="mod-top">
+        <div class="mod-icon" style="background:${m.corBg};color:${m.cor}">${m.icone}</div>
+        <div class="mod-badge" style="background:${m.badgeCor};color:${m.badgeText}">${m.badge}</div>
+      </div>
+      <div>
+        <div class="mod-title">${m.titulo}</div>
+        <div class="mod-desc">${m.desc}</div>
+      </div>
+      <div class="mod-footer">
+        <div class="mod-version" style="font-family:var(--mono)">${m.versao}</div>
+        ${coming
+          ? `<span style="font-size:10px;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:99px">em breve</span>`
+          : `<span class="mod-arrow" style="color:${m.cor}">→</span>`
+        }
+      </div>
+    </div>`;
+  }).join('');
+
+  // data
+  const now = new Date();
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('home-date').textContent =
+    `${dias[now.getDay()]}, ${now.getDate()} ${meses[now.getMonth()]} ${now.getFullYear()}`;
+
+  const total = MODULOS.filter(m=>m.status==='ativo').length;
+  const coming = MODULOS.filter(m=>m.status==='coming').length;
+  document.getElementById('footer-version').textContent =
+    `${total} módulos ativos · ${coming} em desenvolvimento · plataforma v1.0`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVEGAÇÃO
+// ══════════════════════════════════════════════════════════════
+function abrirModulo(id) {
+  const m = MODULOS.find(x => x.id === id);
+  if (!m || m.status === 'coming') return;
+
+  moduloAtivo = m;
+
+  // barra superior
+  document.getElementById('bar-icon').textContent = m.icone;
+  document.getElementById('bar-icon').style.background = m.corBg;
+  document.getElementById('bar-icon').style.color = m.cor;
+  document.getElementById('bar-name').textContent = m.titulo;
+  const badge = document.getElementById('bar-badge');
+  badge.textContent = m.badge;
+  badge.style.background = m.badgeCor;
+  badge.style.color = m.badgeText;
+
+  // loader
+  document.getElementById('frame-loader').classList.remove('hidden');
+  document.getElementById('loader-txt').textContent = `Carregando ${m.titulo}...`;
+
+  // iframe
+  document.getElementById('app-frame').src = m.arquivo;
+
+  // transição
+  document.getElementById('home').classList.add('hidden');
+  document.getElementById('app-shell').classList.add('active');
+}
+
+function voltarHome() {
+  document.getElementById('app-shell').classList.remove('active');
+  document.getElementById('home').classList.remove('hidden');
+  setTimeout(() => {
+    document.getElementById('app-frame').src = '';
+    moduloAtivo = null;
+  }, 350);
+}
+
+function frameLoaded() {
+  document.getElementById('frame-loader').classList.add('hidden');
+  if (moduloAtivo) notif(`${moduloAtivo.titulo} carregado`);
+}
+
+function recarregarModulo() {
+  if (!moduloAtivo) return;
+  document.getElementById('frame-loader').classList.remove('hidden');
+  const f = document.getElementById('app-frame');
+  f.src = f.src;
+}
+
+function toggleFullscreen() {
+  const shell = document.getElementById('app-shell');
+  if (document.fullscreenElement) {
+    document.exitFullscreen();
+    document.getElementById('bar-fullscreen').textContent = '⤢ Tela cheia';
+  } else {
+    shell.requestFullscreen().catch(()=>{});
+    document.getElementById('bar-fullscreen').textContent = '⤡ Sair';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// NOTIFICAÇÃO
+// ══════════════════════════════════════════════════════════════
+function notif(msg) {
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => renderHome());
+
+// ESC fecha o módulo
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && moduloAtivo) voltarHome();
+});
+</script>
+</body>
+</html>
