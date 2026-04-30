@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTZ Mídia — Central de Atas</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#0e0e0f;--bg2:#161618;--bg3:#1e1e21;--bg4:#242427;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;
+  --green:#2ecc8f;--green-bg:rgba(46,204,143,0.10);--green-border:rgba(46,204,143,0.25);
+  --blue:#5b9cf6;--blue-bg:rgba(91,156,246,0.10);--blue-border:rgba(91,156,246,0.25);
+  --amber:#e8a030;--amber-bg:rgba(232,160,48,0.10);--amber-border:rgba(232,160,48,0.25);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.10);--purple-border:rgba(167,139,250,0.25);
+  --coral:#f97b6b;--coral-bg:rgba(249,123,107,0.10);--coral-border:rgba(249,123,107,0.25);
+  --red:#e05c5c;--red-bg:rgba(224,92,92,0.10);--red-border:rgba(224,92,92,0.25);
+  --radius:10px;--radius-lg:16px;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:14px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px;}
+
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border);}
+.brand{font-size:17px;font-weight:700;letter-spacing:.02em;}
+.sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.dot{display:inline-block;width:7px;height:7px;background:var(--purple);border-radius:50%;margin-right:6px;box-shadow:0 0 8px var(--purple);}
+.nav-sep{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:14px 16px 4px;}
+.nav-items{padding:0 10px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--bg3);color:var(--text);border-left-color:var(--purple);}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border);margin-top:auto;}
+.footer-info{font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;line-height:1.7;}
+
+.main{overflow:auto;}
+.main-inner{padding:28px 32px;max-width:1100px;}
+.section{display:none;}
+.section.active{display:block;}
+.page-header{margin-bottom:24px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:22px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.sc-purple::before{background:var(--purple);}
+.sc-amber::before{background:var(--amber);}
+.sc-red::before{background:var(--red);}
+.sc-green::before{background:var(--green);}
+.sc-blue::before{background:var(--blue);}
+.stat-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.stat-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.sv-purple{color:var(--purple);}
+.sv-amber{color:var(--amber);}
+.sv-red{color:var(--red);}
+.sv-green{color:var(--green);}
+.sv-blue{color:var(--blue);}
+
+/* PANEL */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.panel-title{font-size:13px;font-weight:600;}
+.panel-body{padding:16px 20px;}
+.panel-body.no-pad{padding:0;}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;}
+input,select,textarea{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:7px 10px;width:100%;outline:none;transition:border .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--purple);}
+select option{background:var(--bg2);}
+textarea{resize:vertical;min-height:90px;line-height:1.6;}
+
+/* BUTTONS */
+.btn{padding:7px 15px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all .15s;}
+.btn-primary{background:var(--purple);color:#fff;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid transparent;}
+.btn-green{background:var(--green);color:#0a1a12;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;font-family:var(--mono);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.badge-coral{background:var(--coral-bg);color:var(--coral);border:1px solid var(--coral-border);}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.badge-gray{background:rgba(255,255,255,.06);color:var(--text2);}
+
+/* TAREFAS inline */
+.task-list{display:flex;flex-direction:column;gap:4px;margin-top:8px;}
+.task-row{display:flex;align-items:center;gap:8px;}
+.task-row input[type=text]{flex:1;}
+.task-row select{width:140px;}
+.task-row .task-del{background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:0 4px;flex-shrink:0;transition:color .15s;}
+.task-row .task-del:hover{color:var(--red);}
+.add-task-btn{font-size:12px;color:var(--purple);background:none;border:1px dashed var(--purple-border);border-radius:var(--radius);padding:5px 12px;cursor:pointer;font-family:var(--font);margin-top:6px;transition:all .15s;}
+.add-task-btn:hover{background:var(--purple-bg);}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;}
+.tl-item{display:grid;grid-template-columns:100px 1fr;gap:0;}
+.tl-left{display:flex;flex-direction:column;align-items:flex-end;padding-right:20px;padding-top:4px;}
+.tl-date{font-size:11px;font-family:var(--mono);color:var(--text3);text-align:right;line-height:1.4;}
+.tl-line{flex:1;width:1px;background:var(--border);margin:6px 0 0;align-self:stretch;}
+.tl-right{padding-bottom:20px;padding-left:0;position:relative;}
+.tl-right::before{content:'';position:absolute;left:-12px;top:7px;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--border2);background:var(--bg);flex-shrink:0;}
+.tl-item:first-child .tl-right::before{background:var(--purple);border-color:var(--purple);box-shadow:0 0 8px rgba(167,139,250,.5);}
+
+/* ATA CARD */
+.ata-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;overflow:hidden;transition:border-color .15s;}
+.ata-card:hover{border-color:var(--border2);}
+.ata-card-top{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;}
+.ata-card-icon{width:36px;height:36px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.ata-card-meta{flex:1;min-width:0;}
+.ata-card-title{font-size:14px;font-weight:700;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.ata-card-sub{font-size:11px;color:var(--text2);font-family:var(--mono);}
+.ata-card-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+.ata-card-actions{display:flex;gap:4px;flex-shrink:0;}
+.ata-card-body{border-top:1px solid var(--border);padding:14px 16px;display:none;}
+.ata-card-body.open{display:block;}
+.ata-section-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;margin-top:14px;}
+.ata-section-label:first-child{margin-top:0;}
+.ata-descricao{font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap;}
+.ata-pontos{display:flex;flex-direction:column;gap:4px;}
+.ata-ponto{display:flex;gap:8px;font-size:13px;color:var(--text2);line-height:1.5;}
+.ata-ponto::before{content:'·';color:var(--purple);flex-shrink:0;}
+.ata-tasks-list{display:flex;flex-direction:column;gap:4px;}
+.ata-task-item{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg3);border-radius:var(--radius);font-size:12px;}
+.ata-task-item.done{opacity:.55;}
+.ata-task-item.done .ata-task-text{text-decoration:line-through;}
+.ata-task-cb{width:14px;height:14px;border-radius:3px;border:1px solid var(--border2);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.ata-task-cb.checked{background:var(--green);border-color:var(--green);}
+.ata-task-text{flex:1;}
+.ata-task-resp{font-size:10px;color:var(--text3);font-family:var(--mono);flex-shrink:0;}
+.ata-task-prazo{font-size:10px;font-family:var(--mono);flex-shrink:0;}
+.ata-task-prazo.atrasado{color:var(--red);}
+.ata-task-prazo.ok{color:var(--green);}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:16px;}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;opacity:.35;pointer-events:none;}
+.search-input{width:100%;padding:8px 12px 8px 36px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border .15s;}
+.search-input:focus{border-color:var(--purple);}
+
+/* FILTER PILLS */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.fpill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;font-family:var(--mono);border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;transition:all .15s;}
+.fpill:hover{color:var(--text);}
+.fpill.active{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border);}
+
+/* PENDING TASKS */
+.pending-block{background:var(--bg2);border:1px solid var(--amber-border);border-radius:var(--radius-lg);padding:16px 20px;margin-bottom:16px;}
+.pending-title{font-size:12px;font-weight:600;color:var(--amber);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+.pending-item{display:flex;align-items:center;gap:10px;padding:7px 10px;background:var(--bg3);border-radius:var(--radius);margin-bottom:4px;font-size:12px;}
+.pending-item:last-child{margin-bottom:0;}
+.pending-ata{font-size:10px;color:var(--text3);font-family:var(--mono);cursor:pointer;text-decoration:underline;}
+.pending-item.atrasado{border-left:2px solid var(--red);}
+.pending-item.atrasado .pending-prazo{color:var(--red);}
+.pending-prazo{font-size:10px;font-family:var(--mono);color:var(--text3);flex-shrink:0;}
+
+/* MODAL DE EDIÇÃO */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);width:720px;max-width:100%;}
+.modal-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.modal-bar-title{font-size:14px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;line-height:1;padding:0 4px;transition:color .15s;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px;}
+.modal-actions{display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border);justify-content:flex-end;}
+
+/* CLIENT TIMELINE */
+.cli-tl-wrap{display:grid;grid-template-columns:200px 1fr;gap:16px;}
+.cli-list{display:flex;flex-direction:column;gap:4px;}
+.cli-item{padding:8px 12px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text2);border:1px solid transparent;transition:all .15s;display:flex;align-items:center;justify-content:space-between;}
+.cli-item:hover{background:var(--bg3);color:var(--text);}
+.cli-item.active{background:var(--bg3);color:var(--text);border-color:var(--purple-border);}
+.cli-item-count{font-size:10px;font-family:var(--mono);color:var(--text3);}
+
+/* DRIVE */
+.startup-overlay{position:fixed;inset:0;background:#0e0e0f;z-index:99998;display:flex;align-items:center;justify-content:center;}
+.startup-overlay.gone{display:none;}
+.startup-box{background:#161618;border:1px solid rgba(255,255,255,0.13);border-radius:18px;padding:36px 40px;width:400px;max-width:92vw;display:flex;flex-direction:column;align-items:center;gap:18px;text-align:center;}
+.startup-icon{width:52px;height:52px;border-radius:14px;background:rgba(167,139,250,.12);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(167,139,250,.25);}
+.startup-title{font-size:18px;font-weight:700;letter-spacing:-.02em;color:#f0ede8;}
+.startup-sub{font-size:12px;color:#9e9b95;font-family:'DM Mono',monospace;line-height:1.6;}
+.startup-btn-primary{width:100%;padding:11px;border-radius:10px;background:#a78bfa;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;transition:filter .15s;}
+.startup-btn-primary:hover{filter:brightness(1.1);}
+.startup-btn-ghost{width:100%;padding:9px;border-radius:10px;background:none;border:1px solid rgba(255,255,255,0.13);color:#9e9b95;font-family:'Syne',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;}
+.startup-btn-ghost:hover{border-color:rgba(255,255,255,0.25);color:#f0ede8;}
+.startup-hint{font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace;}
+.drive-sep{width:100%;display:flex;align-items:center;gap:10px;font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace;}
+.drive-sep::before,.drive-sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.drive-btn{width:100%;padding:10px;border-radius:10px;background:none;border:1px solid rgba(66,133,244,0.4);color:#4285f4;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:8px;}
+.drive-btn:hover{background:rgba(66,133,244,0.1);border-color:rgba(66,133,244,0.7);}
+.drive-status{font-size:11px;font-family:'DM Mono',monospace;text-align:center;min-height:16px;}
+.drive-status.ok{color:#2ecc8f;}
+.drive-status.err{color:#e05c5c;}
+.drive-status.loading{color:#9e9b95;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--purple-border);color:var(--purple);font-family:var(--mono);font-size:12px;padding:10px 18px;border-radius:var(--radius);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+
+.empty-state{text-align:center;padding:32px;color:var(--text3);font-size:13px;}
+
+@media(max-width:740px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:static;}
+  .main-inner{padding:16px;}
+  .cli-tl-wrap{grid-template-columns:1fr;}
+  .tl-item{grid-template-columns:80px 1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- STARTUP -->
+<div class="startup-overlay" id="startup-overlay">
+  <div class="startup-box">
+    <div class="startup-icon">📋</div>
+    <div class="startup-title">Central de Atas</div>
+    <div class="startup-sub">Carregue o backup para continuar de onde parou,<br>ou comece uma sessão nova.</div>
+    <input type="file" id="startup-file" accept=".json" style="display:none" onchange="startupCarregarJSON(event)">
+    <button class="startup-btn-primary" onclick="document.getElementById('startup-file').click()">Carregar backup (.json)</button>
+    <button class="startup-btn-ghost" onclick="startupPular()">Começar sem backup</button>
+    <div class="drive-sep">Google Drive</div>
+    <button class="drive-btn" onclick="driveCarregar()">
+      <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".7"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".85"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      Carregar do Drive
+    </button>
+    <div class="drive-status" id="drive-status"></div>
+    <div class="startup-hint">Os dados são salvos automaticamente ao sair</div>
+  </div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand"><span class="dot"></span>RTZ Mídia</div>
+    <div class="sub">// central de atas</div>
+  </div>
+  <div class="nav-items">
+    <div class="nav-sep">Navegação</div>
+    <button class="nav-item active" onclick="goSec('dashboard',this)"><span class="icon">◈</span>Dashboard</button>
+    <button class="nav-item" onclick="goSec('nova',this)"><span class="icon">⊕</span>Nova ata</button>
+    <button class="nav-item" onclick="goSec('historico',this)"><span class="icon">◷</span>Histórico</button>
+    <button class="nav-item" onclick="goSec('tarefas',this)"><span class="icon">◎</span>Tarefas</button>
+    <button class="nav-item" onclick="goSec('clientes',this)"><span class="icon">◫</span>Por cliente / time</button>
+    <div class="nav-sep">Google Drive</div>
+    <button class="nav-item" onclick="driveSalvar()" style="color:#4285f4;border-left-color:#4285f4"><span class="icon">▲</span>Salvar no Drive</button>
+    <button class="nav-item" onclick="driveCarregarSidebar()" style="color:#4285f4"><span class="icon">▼</span>Carregar do Drive</button>
+    <div class="nav-sep">Sistema</div>
+    <button class="nav-item" onclick="exportarJSON()"><span class="icon">↓</span>Exportar backup</button>
+    <button class="nav-item" onclick="importarJSON()"><span class="icon">↑</span>Importar backup</button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="footer-info" id="footer-info"></div>
+  </div>
+</aside>
+
+<div class="main">
+<div class="main-inner">
+
+<!-- DASHBOARD -->
+<div id="sec-dashboard" class="section active">
+  <div class="page-header">
+    <div><div class="page-title">Dashboard</div><div class="page-sub">Visão geral das reuniões e tarefas</div></div>
+    <button class="btn btn-primary btn-sm" onclick="goSec('nova',document.querySelectorAll('.nav-item')[1])">+ Nova ata</button>
+  </div>
+  <div class="stats-row" id="dash-stats"></div>
+  <div id="dash-pending"></div>
+  <div id="dash-recentes"></div>
+</div>
+
+<!-- NOVA ATA -->
+<div id="sec-nova" class="section">
+  <div class="page-header">
+    <div><div class="page-title" id="nova-title">Nova ata</div><div class="page-sub">Registre o que foi discutido, decidido e delegado</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Informações da reunião</span></div>
+    <div class="panel-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Título / Assunto</label><input id="f-titulo" type="text" placeholder="ex: Briefing campanha verão"></div>
+        <div class="form-group"><label>Data</label><input id="f-data" type="date"></div>
+        <div class="form-group"><label>Tipo</label>
+          <select id="f-tipo">
+            <option value="cliente">Reunião com cliente</option>
+            <option value="interna">Reunião interna</option>
+            <option value="briefing">Briefing de projeto</option>
+            <option value="retrospectiva">Retrospectiva / feedback</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Cliente / Time</label><input id="f-cliente" type="text" placeholder="ex: NIKE ou Equipe RTZ"></div>
+        <div class="form-group"><label>Projeto (opcional)</label><input id="f-projeto" type="text" placeholder="ex: SUMMER_CAMP"></div>
+        <div class="form-group"><label>Registrado por</label><input id="f-autor" type="text" placeholder="ex: Matheus"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Participantes</label><input id="f-participantes" type="text" placeholder="ex: Matheus, Ana, João (cliente)"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Conteúdo da reunião</span></div>
+    <div class="panel-body">
+      <div class="form-group" style="margin-bottom:14px">
+        <label>Descrição / Contexto geral</label>
+        <textarea id="f-descricao" placeholder="Resumo do que foi discutido na reunião..." style="min-height:100px"></textarea>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label>Pontos importantes (um por linha)</label>
+        <textarea id="f-pontos" placeholder="Decisão aprovada pelo cliente&#10;Prazo ajustado para o dia 15&#10;Budget ampliado para incluir motion" style="min-height:80px"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Próximos passos / Observações</label>
+        <textarea id="f-proximos" placeholder="O que precisa ser feito após a reunião..." style="min-height:70px"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Tarefas designadas</span></div>
+    <div class="panel-body">
+      <div class="task-list" id="task-list"></div>
+      <button class="add-task-btn" onclick="addTaskField()">+ Adicionar tarefa</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:10px;margin-bottom:32px">
+    <button class="btn btn-primary" onclick="salvarAta()" id="btn-salvar">Salvar ata</button>
+    <button class="btn btn-ghost" onclick="limparForm()">Limpar</button>
+  </div>
+</div>
+
+<!-- HISTÓRICO -->
+<div id="sec-historico" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Histórico de atas</div><div class="page-sub">Todas as reuniões registradas</div></div>
+    <button class="btn btn-ghost btn-sm" onclick="exportarCSV()">Exportar CSV</button>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="search-input" id="hist-busca" type="text" placeholder="Buscar por título, cliente ou projeto..." oninput="renderHistorico()">
+  </div>
+  <div class="filter-row" id="hist-filtros"></div>
+  <div id="hist-lista"></div>
+</div>
+
+<!-- TAREFAS -->
+<div id="sec-tarefas" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Tarefas</div><div class="page-sub">Todas as tarefas de todas as reuniões</div></div>
+  </div>
+  <div class="stats-row" id="task-stats"></div>
+  <div class="filter-row" id="task-filtros"></div>
+  <div id="task-lista"></div>
+</div>
+
+<!-- POR CLIENTE -->
+<div id="sec-clientes" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Por cliente / time</div><div class="page-sub">Linha do tempo de reuniões por participante</div></div>
+  </div>
+  <div class="cli-tl-wrap">
+    <div>
+      <div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Clientes / Times</div>
+      <div class="cli-list" id="cli-list"></div>
+    </div>
+    <div id="cli-timeline"></div>
+  </div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MODAL DE EDIÇÃO -->
+<div class="modal-overlay" id="modal-edit" onclick="if(event.target===this)fecharModal()">
+  <div class="modal">
+    <div class="modal-bar">
+      <span class="modal-bar-title">Editar ata</span>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Título</label><input id="e-titulo" type="text"></div>
+        <div class="form-group"><label>Data</label><input id="e-data" type="date"></div>
+        <div class="form-group"><label>Tipo</label>
+          <select id="e-tipo">
+            <option value="cliente">Reunião com cliente</option>
+            <option value="interna">Reunião interna</option>
+            <option value="briefing">Briefing de projeto</option>
+            <option value="retrospectiva">Retrospectiva / feedback</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Cliente / Time</label><input id="e-cliente" type="text"></div>
+        <div class="form-group"><label>Projeto</label><input id="e-projeto" type="text"></div>
+        <div class="form-group"><label>Registrado por</label><input id="e-autor" type="text"></div>
+      </div>
+      <div class="form-group" style="margin-bottom:10px"><label>Participantes</label><input id="e-participantes" type="text"></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Descrição</label><textarea id="e-descricao" style="min-height:80px"></textarea></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Pontos importantes (um por linha)</label><textarea id="e-pontos" style="min-height:70px"></textarea></div>
+      <div class="form-group" style="margin-bottom:10px"><label>Próximos passos</label><textarea id="e-proximos" style="min-height:60px"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarEdicao()">Salvar alterações</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-import" accept=".json" style="display:none" onchange="processarImport(event)">
+<div class="toast" id="toast"></div>
+
+<script defer>
+const KEY = 'rtz_atas_v1';
+const DRIVE_CLIENT_ID = '251018833740-pr9jp8qsbk3qj7bkbesh14hu8p12r6ja.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FOLDER_NAME = 'RTZ_Backups';
+const DRIVE_FILENAME = 'RTZ_Atas_backup.json';
+let driveToken = null;
+let driveFolderId = null;
+let _tokenClient = null;
+let _resolveAuth = null;
+
+let db = { atas: [] };
+let editandoId = null;
+let clienteAtivo = null;
+let filtroTipo = 'todos';
+let filtroTaskStatus = 'todos';
+
+// ── TIPOS ────────────────────────────────────────────────────
+const TIPOS = {
+  cliente:        { label: 'Cliente',        cor: 'var(--blue)',   badge: 'badge-blue',   icon: '🤝' },
+  interna:        { label: 'Interna',         cor: 'var(--green)',  badge: 'badge-green',  icon: '👥' },
+  briefing:       { label: 'Briefing',        cor: 'var(--purple)', badge: 'badge-purple', icon: '📋' },
+  retrospectiva:  { label: 'Retrospectiva',   cor: 'var(--amber)',  badge: 'badge-amber',  icon: '🔁' },
+};
+
+// ── STORAGE ──────────────────────────────────────────────────
+function load() {
+  try { const d = localStorage.getItem(KEY); if (d) db = JSON.parse(d); } catch(e) {}
+  if (!Array.isArray(db.atas)) db.atas = [];
+}
+function save() { localStorage.setItem(KEY, JSON.stringify(db)); }
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+function hoje() { return new Date().toISOString().slice(0, 10); }
+function pad(n) { return String(n).padStart(2, '0'); }
+function formatData(s) {
+  if (!s) return '—';
+  const [y, m, d] = s.split('-');
+  return `${d}/${m}/${y}`;
+}
+function isAtrasado(prazo) {
+  if (!prazo) return false;
+  return prazo < hoje();
+}
+
+// ── NAVEGAÇÃO ────────────────────────────────────────────────
+function goSec(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'historico') renderHistorico();
+  if (id === 'tarefas') renderTarefas();
+  if (id === 'clientes') renderClientes();
+  if (id === 'nova' && !editandoId) { document.getElementById('nova-title').textContent = 'Nova ata'; document.getElementById('btn-salvar').textContent = 'Salvar ata'; }
+}
+
+// ── DASHBOARD ────────────────────────────────────────────────
+function renderDashboard() {
+  const total = db.atas.length;
+  const allTasks = db.atas.flatMap(a => (a.tarefas || []).map(t => ({ ...t, ataId: a.id, ataTitulo: a.titulo, ataCliente: a.cliente })));
+  const pendentes = allTasks.filter(t => !t.done);
+  const atrasadas = pendentes.filter(t => isAtrasado(t.prazo));
+  const clientes = [...new Set(db.atas.map(a => a.cliente).filter(Boolean))].length;
+
+  document.getElementById('dash-stats').innerHTML = [
+    ['sc-purple', 'sv-purple', 'Total de atas', total],
+    ['sc-amber',  'sv-amber',  'Tarefas pendentes', pendentes.length],
+    ['sc-red',    'sv-red',    'Atrasadas', atrasadas.length],
+    ['sc-blue',   'sv-blue',   'Clientes / Times', clientes],
+  ].map(([sc, sv, l, v]) => `<div class="stat-card ${sc}"><div class="stat-label">${l}</div><div class="stat-value ${sv}">${v}</div></div>`).join('');
+
+  // Tarefas pendentes em destaque
+  const pEl = document.getElementById('dash-pending');
+  if (pendentes.length) {
+    pEl.innerHTML = `<div class="pending-block">
+      <div class="pending-title">⚠ Tarefas pendentes (${pendentes.length})</div>
+      ${pendentes.slice(0, 8).map(t => `
+        <div class="pending-item ${isAtrasado(t.prazo) ? 'atrasado' : ''}">
+          <span style="flex:1;font-size:12px">${t.texto}</span>
+          ${t.responsavel ? `<span class="badge badge-gray" style="font-size:9px">${t.responsavel}</span>` : ''}
+          ${t.prazo ? `<span class="pending-prazo ${isAtrasado(t.prazo) ? 'atrasado' : ''}">${formatData(t.prazo)}</span>` : ''}
+          <span class="pending-ata" onclick="abrirAta(${t.ataId})">${t.ataTitulo}</span>
+        </div>`).join('')}
+      ${pendentes.length > 8 ? `<div style="font-size:11px;color:var(--text3);margin-top:6px;font-family:var(--mono)">+ ${pendentes.length - 8} mais — veja em Tarefas</div>` : ''}
+    </div>`;
+  } else {
+    pEl.innerHTML = '';
+  }
+
+  // Atas recentes
+  const recentes = [...db.atas].sort((a, b) => (b.data || '').localeCompare(a.data || '')).slice(0, 5);
+  const rEl = document.getElementById('dash-recentes');
+  if (!recentes.length) { rEl.innerHTML = '<div class="empty-state">Nenhuma ata registrada ainda.<br>Clique em <b>+ Nova ata</b> para começar.</div>'; return; }
+  rEl.innerHTML = `<div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Atas recentes</div>` +
+    recentes.map(a => ataCard(a)).join('');
+}
+
+// ── ATA CARD ────────────────────────────────────────────────
+function ataCard(a) {
+  const t = TIPOS[a.tipo] || TIPOS.interna;
+  const tasks = a.tarefas || [];
+  const done = tasks.filter(t => t.done).length;
+  const pend = tasks.filter(t => !t.done).length;
+  const atr = tasks.filter(t => !t.done && isAtrasado(t.prazo)).length;
+  return `<div class="ata-card" id="ata-card-${a.id}">
+    <div class="ata-card-top" onclick="toggleAta(${a.id})">
+      <div class="ata-card-icon" style="background:${t.cor}20;color:${t.cor}">${t.icon}</div>
+      <div class="ata-card-meta">
+        <div class="ata-card-title">${a.titulo || 'Sem título'}</div>
+        <div class="ata-card-sub">${formatData(a.data)} · ${a.cliente || '—'}${a.projeto ? ' · ' + a.projeto : ''} · por ${a.autor || '—'}</div>
+        <div class="ata-card-badges">
+          <span class="badge ${t.badge}">${t.label}</span>
+          ${tasks.length ? `<span class="badge badge-gray">${done}/${tasks.length} tarefas</span>` : ''}
+          ${pend ? `<span class="badge badge-amber">${pend} pendente${pend > 1 ? 's' : ''}</span>` : ''}
+          ${atr ? `<span class="badge badge-red">${atr} atrasada${atr > 1 ? 's' : ''}</span>` : ''}
+        </div>
+      </div>
+      <div class="ata-card-actions">
+        <button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();abrirEdicao(${a.id})">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();deletarAta(${a.id})">×</button>
+      </div>
+    </div>
+    <div class="ata-card-body" id="ata-body-${a.id}">
+      ${a.descricao ? `<div class="ata-section-label">Descrição</div><div class="ata-descricao">${escapeHtml(a.descricao)}</div>` : ''}
+      ${(a.pontos||[]).length ? `<div class="ata-section-label">Pontos importantes</div><div class="ata-pontos">${a.pontos.map(p => `<div class="ata-ponto">${escapeHtml(p)}</div>`).join('')}</div>` : ''}
+      ${a.proximos ? `<div class="ata-section-label">Próximos passos</div><div class="ata-descricao">${escapeHtml(a.proximos)}</div>` : ''}
+      ${tasks.length ? `<div class="ata-section-label">Tarefas (${done}/${tasks.length} concluídas)</div><div class="ata-tasks-list">${tasks.map((tk, i) => `
+        <div class="ata-task-item ${tk.done ? 'done' : ''}">
+          <div class="ata-task-cb ${tk.done ? 'checked' : ''}" onclick="toggleTask(${a.id}, ${i})">
+            ${tk.done ? '<svg width="8" height="7" viewBox="0 0 8 7" fill="none"><path d="M1 3.5l2 2 4-4" stroke="#0a1a12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : ''}
+          </div>
+          <span class="ata-task-text">${escapeHtml(tk.texto)}</span>
+          ${tk.responsavel ? `<span class="ata-task-resp">${tk.responsavel}</span>` : ''}
+          ${tk.prazo ? `<span class="ata-task-prazo ${isAtrasado(tk.prazo) && !tk.done ? 'atrasado' : tk.done ? '' : 'ok'}">${formatData(tk.prazo)}</span>` : ''}
+        </div>`).join('')}</div>` : ''}
+      ${a.participantes ? `<div class="ata-section-label" style="margin-top:12px">Participantes</div><div style="font-size:12px;color:var(--text2)">${escapeHtml(a.participantes)}</div>` : ''}
+    </div>
+  </div>`;
+}
+
+function toggleAta(id) {
+  const body = document.getElementById('ata-body-' + id);
+  if (body) body.classList.toggle('open');
+}
+function abrirAta(id) {
+  goSec('historico', document.querySelectorAll('.nav-item')[2]);
+  setTimeout(() => {
+    const el = document.getElementById('ata-card-' + id);
+    if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); document.getElementById('ata-body-' + id)?.classList.add('open'); }
+  }, 100);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── FORM / NOVA ATA ─────────────────────────────────────────
+let taskFields = [];
+
+function addTaskField(texto='', responsavel='', prazo='') {
+  const id = Date.now() + Math.random();
+  taskFields.push(id);
+  const div = document.createElement('div');
+  div.className = 'task-row';
+  div.id = 'tf-' + id;
+  div.innerHTML = `
+    <input type="text" placeholder="Descrição da tarefa..." value="${escapeHtml(texto)}">
+    <input type="text" placeholder="Responsável" style="width:130px" value="${escapeHtml(responsavel)}">
+    <input type="date" style="width:140px" value="${prazo}">
+    <button class="task-del" onclick="removerTaskField('${id}')">×</button>
+  `;
+  document.getElementById('task-list').appendChild(div);
+}
+
+function removerTaskField(id) {
+  const el = document.getElementById('tf-' + id);
+  if (el) el.remove();
+  taskFields = taskFields.filter(x => x !== id);
+}
+
+function coletarTasks() {
+  return [...document.querySelectorAll('#task-list .task-row')].map(row => {
+    const inputs = row.querySelectorAll('input');
+    return { texto: inputs[0].value.trim(), responsavel: inputs[1].value.trim(), prazo: inputs[2].value, done: false };
+  }).filter(t => t.texto);
+}
+
+function salvarAta() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if (!titulo) { toast('Informe o título da reunião'); return; }
+  const pontos = document.getElementById('f-pontos').value.split('\n').map(s => s.trim()).filter(Boolean);
+  const ata = {
+    id: editandoId || Date.now(),
+    titulo,
+    data: document.getElementById('f-data').value,
+    tipo: document.getElementById('f-tipo').value,
+    cliente: document.getElementById('f-cliente').value.trim(),
+    projeto: document.getElementById('f-projeto').value.trim(),
+    autor: document.getElementById('f-autor').value.trim(),
+    participantes: document.getElementById('f-participantes').value.trim(),
+    descricao: document.getElementById('f-descricao').value.trim(),
+    pontos,
+    proximos: document.getElementById('f-proximos').value.trim(),
+    tarefas: coletarTasks(),
+    criado: editandoId ? (db.atas.find(a => a.id === editandoId)?.criado || new Date().toISOString()) : new Date().toISOString(),
+    atualizado: new Date().toISOString(),
+  };
+  if (editandoId) {
+    // preserve task done status
+    const old = db.atas.find(a => a.id === editandoId);
+    if (old) ata.tarefas = coletarTasks().map((t, i) => ({ ...t, done: old.tarefas?.[i]?.done || false }));
+    db.atas = db.atas.map(a => a.id === editandoId ? ata : a);
+    toast('Ata atualizada!');
+  } else {
+    db.atas.unshift(ata);
+    toast('Ata salva!');
+  }
+  save();
+  limparForm();
+  goSec('historico', document.querySelectorAll('.nav-item')[2]);
+}
+
+function limparForm() {
+  ['f-titulo','f-data','f-cliente','f-projeto','f-autor','f-participantes','f-descricao','f-pontos','f-proximos'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-data').value = hoje();
+  document.getElementById('task-list').innerHTML = '';
+  taskFields = [];
+  editandoId = null;
+  document.getElementById('nova-title').textContent = 'Nova ata';
+  document.getElementById('btn-salvar').textContent = 'Salvar ata';
+}
+
+// ── EDIÇÃO INLINE ───────────────────────────────────────────
+function abrirEdicao(id) {
+  const a = db.atas.find(x => x.id === id); if (!a) return;
+  document.getElementById('e-titulo').value = a.titulo || '';
+  document.getElementById('e-data').value = a.data || '';
+  document.getElementById('e-tipo').value = a.tipo || 'interna';
+  document.getElementById('e-cliente').value = a.cliente || '';
+  document.getElementById('e-projeto').value = a.projeto || '';
+  document.getElementById('e-autor').value = a.autor || '';
+  document.getElementById('e-participantes').value = a.participantes || '';
+  document.getElementById('e-descricao').value = a.descricao || '';
+  document.getElementById('e-pontos').value = (a.pontos || []).join('\n');
+  document.getElementById('e-proximos').value = a.proximos || '';
+  document.getElementById('modal-edit')._ataId = id;
+  document.getElementById('modal-edit').classList.add('open');
+}
+
+function salvarEdicao() {
+  const id = document.getElementById('modal-edit')._ataId;
+  const a = db.atas.find(x => x.id === id); if (!a) return;
+  a.titulo = document.getElementById('e-titulo').value.trim();
+  a.data = document.getElementById('e-data').value;
+  a.tipo = document.getElementById('e-tipo').value;
+  a.cliente = document.getElementById('e-cliente').value.trim();
+  a.projeto = document.getElementById('e-projeto').value.trim();
+  a.autor = document.getElementById('e-autor').value.trim();
+  a.participantes = document.getElementById('e-participantes').value.trim();
+  a.descricao = document.getElementById('e-descricao').value.trim();
+  a.pontos = document.getElementById('e-pontos').value.split('\n').map(s => s.trim()).filter(Boolean);
+  a.proximos = document.getElementById('e-proximos').value.trim();
+  a.atualizado = new Date().toISOString();
+  save(); fecharModal(); renderHistorico(); toast('Ata atualizada!');
+}
+
+function fecharModal() { document.getElementById('modal-edit').classList.remove('open'); }
+
+function deletarAta(id) {
+  if (!confirm('Remover esta ata permanentemente?')) return;
+  db.atas = db.atas.filter(a => a.id !== id);
+  save(); renderHistorico(); renderDashboard(); toast('Ata removida.');
+}
+
+// ── TOGGLE TASK ──────────────────────────────────────────────
+function toggleTask(ataId, taskIdx) {
+  const a = db.atas.find(x => x.id === ataId); if (!a || !a.tarefas?.[taskIdx]) return;
+  a.tarefas[taskIdx].done = !a.tarefas[taskIdx].done;
+  save();
+  // re-render just this card
+  const card = document.getElementById('ata-card-' + ataId);
+  const wasOpen = document.getElementById('ata-body-' + ataId)?.classList.contains('open');
+  if (card) { card.outerHTML = ataCard(a); }
+  if (wasOpen) document.getElementById('ata-body-' + ataId)?.classList.add('open');
+  renderDashboard();
+}
+
+// ── HISTÓRICO ────────────────────────────────────────────────
+function renderHistorico() {
+  const q = (document.getElementById('hist-busca')?.value || '').toLowerCase();
+  // filtros
+  const fEl = document.getElementById('hist-filtros');
+  const tipos = ['todos', ...Object.keys(TIPOS)];
+  fEl.innerHTML = tipos.map(k => `<button class="fpill ${filtroTipo === k ? 'active' : ''}" onclick="setFiltroTipo('${k}',this)">${k === 'todos' ? 'Todos' : TIPOS[k].label}</button>`).join('');
+
+  let lista = [...db.atas].sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+  if (filtroTipo !== 'todos') lista = lista.filter(a => a.tipo === filtroTipo);
+  if (q) lista = lista.filter(a =>
+    (a.titulo || '').toLowerCase().includes(q) ||
+    (a.cliente || '').toLowerCase().includes(q) ||
+    (a.projeto || '').toLowerCase().includes(q) ||
+    (a.descricao || '').toLowerCase().includes(q)
+  );
+
+  const el = document.getElementById('hist-lista');
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma ata encontrada.</div>'; return; }
+  el.innerHTML = lista.map(a => ataCard(a)).join('');
+}
+
+function setFiltroTipo(val) { filtroTipo = val; renderHistorico(); }
+
+// ── TAREFAS ──────────────────────────────────────────────────
+function renderTarefas() {
+  const allTasks = db.atas.flatMap(a =>
+    (a.tarefas || []).map((t, i) => ({ ...t, ataId: a.id, ataTitulo: a.titulo, ataCliente: a.cliente, taskIdx: i }))
+  );
+  const pend = allTasks.filter(t => !t.done).length;
+  const done = allTasks.filter(t => t.done).length;
+  const atr = allTasks.filter(t => !t.done && isAtrasado(t.prazo)).length;
+
+  document.getElementById('task-stats').innerHTML = [
+    ['sc-amber','sv-amber','Pendentes',pend],
+    ['sc-red','sv-red','Atrasadas',atr],
+    ['sc-green','sv-green','Concluídas',done],
+    ['sc-purple','sv-purple','Total',allTasks.length],
+  ].map(([sc,sv,l,v]) => `<div class="stat-card ${sc}"><div class="stat-label">${l}</div><div class="stat-value ${sv}">${v}</div></div>`).join('');
+
+  const fEl = document.getElementById('task-filtros');
+  const filtros = [['todos','Todas'],['pendente','Pendentes'],['atrasado','Atrasadas'],['done','Concluídas']];
+  fEl.innerHTML = filtros.map(([k,l]) => `<button class="fpill ${filtroTaskStatus===k?'active':''}" onclick="setFiltroTask('${k}')">${l}</button>`).join('');
+
+  let lista = allTasks;
+  if (filtroTaskStatus === 'pendente') lista = lista.filter(t => !t.done);
+  else if (filtroTaskStatus === 'atrasado') lista = lista.filter(t => !t.done && isAtrasado(t.prazo));
+  else if (filtroTaskStatus === 'done') lista = lista.filter(t => t.done);
+  lista.sort((a, b) => {
+    if (!a.done && b.done) return -1; if (a.done && !b.done) return 1;
+    return (a.prazo || '9').localeCompare(b.prazo || '9');
+  });
+
+  const el = document.getElementById('task-lista');
+  if (!lista.length) { el.innerHTML = '<div class="empty-state">Nenhuma tarefa aqui.</div>'; return; }
+  el.innerHTML = `<div class="panel"><div class="panel-body no-pad"><table width="100%" style="border-collapse:collapse;font-size:13px">
+    <thead><tr>
+      <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)">Tarefa</th>
+      <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)">Responsável</th>
+      <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)">Prazo</th>
+      <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)">Reunião</th>
+      <th style="padding:9px 14px;border-bottom:1px solid var(--border)"></th>
+    </tr></thead>
+    <tbody>${lista.map(t => `<tr style="${t.done ? 'opacity:.5' : ''}">
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div class="ata-task-cb ${t.done?'checked':''}" style="flex-shrink:0" onclick="toggleTask(${t.ataId},${t.taskIdx})">
+            ${t.done?'<svg width="8" height="7" viewBox="0 0 8 7" fill="none"><path d="M1 3.5l2 2 4-4" stroke="#0a1a12" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}
+          </div>
+          <span style="${t.done?'text-decoration:line-through':''}">${escapeHtml(t.texto)}</span>
+        </div>
+      </td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);color:var(--text2);font-size:12px">${t.responsavel||'—'}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:12px;color:${!t.done&&isAtrasado(t.prazo)?'var(--red)':'var(--text2)'}">${t.prazo?formatData(t.prazo):'—'}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border);font-size:11px;color:var(--text3);cursor:pointer" onclick="abrirAta(${t.ataId})">${escapeHtml(t.ataTitulo||'')}</td>
+      <td style="padding:10px 14px;border-bottom:1px solid var(--border)"><button class="btn btn-ghost btn-sm" onclick="toggleTask(${t.ataId},${t.taskIdx})">${t.done?'↩ Reabrir':'✓ Fechar'}</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div></div>`;
+}
+function setFiltroTask(val) { filtroTaskStatus = val; renderTarefas(); }
+
+// ── POR CLIENTE ──────────────────────────────────────────────
+function renderClientes() {
+  const clientes = [...new Set(db.atas.map(a => a.cliente).filter(Boolean))].sort();
+  const el = document.getElementById('cli-list');
+  if (!clientes.length) { el.innerHTML = '<div style="font-size:12px;color:var(--text3)">Nenhum cliente ainda</div>'; document.getElementById('cli-timeline').innerHTML = ''; return; }
+  if (!clienteAtivo || !clientes.includes(clienteAtivo)) clienteAtivo = clientes[0];
+  el.innerHTML = clientes.map(c => {
+    const cnt = db.atas.filter(a => a.cliente === c).length;
+    return `<div class="cli-item ${clienteAtivo===c?'active':''}" onclick="selectCliente('${c.replace(/'/g,"\\'")}')">${c} <span class="cli-item-count">${cnt}</span></div>`;
+  }).join('');
+  renderClienteTimeline();
+}
+
+function selectCliente(c) { clienteAtivo = c; renderClientes(); }
+
+function renderClienteTimeline() {
+  const atas = db.atas.filter(a => a.cliente === clienteAtivo).sort((a, b) => (b.data||'').localeCompare(a.data||''));
+  const el = document.getElementById('cli-timeline');
+  if (!atas.length) { el.innerHTML = '<div class="empty-state">Nenhuma ata para este cliente.</div>'; return; }
+  el.innerHTML = `<div style="font-size:13px;font-weight:600;margin-bottom:14px">${clienteAtivo} <span style="font-size:11px;font-weight:400;color:var(--text3);font-family:var(--mono)">${atas.length} reuni${atas.length>1?'ões':'ão'}</span></div>
+  <div class="timeline">
+    ${atas.map((a, i) => {
+      const t = TIPOS[a.tipo] || TIPOS.interna;
+      const tasks = a.tarefas || [];
+      const pend = tasks.filter(t => !t.done).length;
+      return `<div class="tl-item">
+        <div class="tl-left">
+          <div class="tl-date">${formatData(a.data)}</div>
+          <div class="tl-line"></div>
+        </div>
+        <div class="tl-right">
+          ${ataCard(a)}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────
+function exportarCSV() {
+  if (!db.atas.length) { toast('Nenhuma ata'); return; }
+  const hdr = 'Título,Data,Tipo,Cliente,Projeto,Autor,Participantes,Pontos,Tarefas Pendentes';
+  const rows = db.atas.map(a => [
+    a.titulo||'', a.data?formatData(a.data):'', TIPOS[a.tipo]?.label||a.tipo, a.cliente||'',
+    a.projeto||'', a.autor||'', a.participantes||'',
+    (a.pontos||[]).join(' | '),
+    (a.tarefas||[]).filter(t=>!t.done).map(t=>t.texto).join(' | ')
+  ].map(v => '"' + String(v).replace(/"/g, '""') + '"').join(','));
+  const blob = new Blob(['\uFEFF' + [hdr, ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'RTZ_Atas_' + hoje() + '.csv'; a.click();
+  URL.revokeObjectURL(url); toast('CSV exportado!');
+}
+
+function exportarJSON() {
+  const blob = new Blob([JSON.stringify({ versao: 'rtz-atas-v1', exportado: new Date().toISOString(), ...db }, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'RTZ_Atas_' + hoje() + '.json'; a.click();
+  URL.revokeObjectURL(url); toast('Backup exportado!');
+}
+function importarJSON() { document.getElementById('file-import').click(); }
+function processarImport(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      aplicarDados(d);
+      toast('Backup importado!');
+      renderDashboard();
+    } catch(err) { toast('Arquivo inválido'); }
+  };
+  r.readAsText(file); ev.target.value = '';
+}
+function aplicarDados(d) {
+  if (d.atas) db = { atas: d.atas };
+  else if (Array.isArray(d)) db = { atas: d };
+  save();
+}
+
+// ── STARTUP ──────────────────────────────────────────────────
+function startupCarregarJSON(ev) {
+  const file = ev.target.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const d = JSON.parse(e.target.result);
+      aplicarDados(d);
+      document.getElementById('startup-overlay').classList.add('gone');
+      renderDashboard(); toast('Backup carregado!');
+    } catch(err) { toast('Arquivo inválido'); startupPular(); }
+  };
+  r.readAsText(file); ev.target.value = '';
+}
+function startupPular() { document.getElementById('startup-overlay').classList.add('gone'); }
+
+// ── GOOGLE DRIVE ─────────────────────────────────────────────
+function driveSetStatus(msg, tipo) {
+  const el = document.getElementById('drive-status');
+  if (el) { el.textContent = msg; el.className = 'drive-status ' + (tipo || ''); }
+}
+function driveInicializarGIS() {
+  if (_tokenClient) return;
+  _tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: DRIVE_CLIENT_ID, scope: DRIVE_SCOPE,
+    callback: (resp) => {
+      if (resp.error) { if (_resolveAuth) _resolveAuth(null, resp.error); return; }
+      driveToken = resp.access_token;
+      if (_resolveAuth) _resolveAuth(resp.access_token, null);
+    },
+  });
+}
+function driveAutenticar() {
+  return new Promise((resolve, reject) => {
+    driveInicializarGIS();
+    _resolveAuth = (token, err) => { _resolveAuth = null; if (err) reject(new Error(err)); else resolve(token); };
+    _tokenClient.requestAccessToken({ prompt: driveToken ? '' : 'consent' });
+  });
+}
+async function driveObterOuCriarPasta() {
+  if (driveFolderId) return driveFolderId;
+  const sr = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FOLDER_NAME}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id)`,
+    { headers: { Authorization: `Bearer ${driveToken}` } });
+  const sd = await sr.json();
+  if (sd.files?.length) { driveFolderId = sd.files[0].id; return driveFolderId; }
+  const cr = await fetch('https://www.googleapis.com/drive/v3/files', {
+    method: 'POST', headers: { Authorization: `Bearer ${driveToken}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: DRIVE_FOLDER_NAME, mimeType: 'application/vnd.google-apps.folder' })
+  });
+  const cd = await cr.json(); driveFolderId = cd.id; return driveFolderId;
+}
+async function driveBuscarArquivo() {
+  await driveObterOuCriarPasta();
+  const sr = await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,
+    { headers: { Authorization: `Bearer ${driveToken}` } });
+  const sd = await sr.json();
+  return sd.files?.length ? sd.files[0] : null;
+}
+async function driveUpload(payload) {
+  await driveObterOuCriarPasta();
+  const existing = await driveBuscarArquivo();
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const form = new FormData();
+  form.append('metadata', new Blob([JSON.stringify(
+    existing ? { name: DRIVE_FILENAME } : { name: DRIVE_FILENAME, parents: [driveFolderId] }
+  )], { type: 'application/json' }));
+  form.append('file', blob);
+  const method = existing ? 'PATCH' : 'POST';
+  const url = existing
+    ? `https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=multipart`
+    : 'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart';
+  const res = await fetch(url, { method, headers: { Authorization: `Bearer ${driveToken}` }, body: form });
+  return res.ok;
+}
+async function driveSalvar() {
+  try {
+    driveSetStatus('Autenticando...', 'loading');
+    if (!driveToken) await driveAutenticar();
+    driveSetStatus('Salvando...', 'loading');
+    const ok = await driveUpload({ versao: 'rtz-atas-v1', exportado: new Date().toISOString(), ...db });
+    driveSetStatus(ok ? '✓ Salvo em RTZ_Backups!' : '✗ Falha ao salvar', ok ? 'ok' : 'err');
+    if (ok) toast('Salvo no Drive!');
+  } catch(e) { driveSetStatus('✗ ' + e.message, 'err'); }
+}
+async function driveCarregar() {
+  try {
+    driveSetStatus('Autenticando...', 'loading');
+    if (!driveToken) await driveAutenticar();
+    driveSetStatus('Buscando backup...', 'loading');
+    const file = await driveBuscarArquivo();
+    if (!file) {
+      driveSetStatus('Nenhum backup encontrado — salve primeiro.', 'err');
+      setTimeout(() => startupPular(), 2000);
+      return;
+    }
+    const mod = new Date(file.modifiedTime).toLocaleString('pt-BR');
+    driveSetStatus(`Carregando backup de ${mod}...`, 'loading');
+    const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, { headers: { Authorization: `Bearer ${driveToken}` } });
+    const data = await dl.json();
+    aplicarDados(data);
+    document.getElementById('startup-overlay').classList.add('gone');
+    renderDashboard();
+    driveSetStatus(`✓ Restaurado (${mod})`, 'ok');
+    toast('Dados carregados do Drive!');
+  } catch(e) { driveSetStatus('✗ ' + e.message, 'err'); }
+}
+async function driveCarregarSidebar() {
+  try {
+    if (!driveToken) await driveAutenticar();
+    const file = await driveBuscarArquivo();
+    if (!file) { alert('Nenhum backup no Drive ainda.'); return; }
+    const mod = new Date(file.modifiedTime).toLocaleString('pt-BR');
+    if (!confirm(`Restaurar backup salvo em ${mod}?\nOs dados atuais serão substituídos.`)) return;
+    const dl = await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`, { headers: { Authorization: `Bearer ${driveToken}` } });
+    const data = await dl.json();
+    aplicarDados(data);
+    renderDashboard(); toast('Dados restaurados do Drive!');
+  } catch(e) { alert('Erro: ' + e.message); }
+}
+async function autoSaveDriveAoSair() {
+  if (!driveToken) return;
+  try { await driveUpload({ versao: 'rtz-atas-v1', exportado: new Date().toISOString(), ...db }); } catch(e) {}
+}
+window.addEventListener('pagehide', autoSaveDriveAoSair);
+window.addEventListener('beforeunload', autoSaveDriveAoSair);
+
+// ── INIT ─────────────────────────────────────────────────────
+load();
+document.getElementById('f-data').value = hoje();
+document.getElementById('footer-info').innerHTML = `Central de Atas · RTZ<br>${new Date().toLocaleDateString('pt-BR')}`;
+renderDashboard();
+</script>
+</body>
+</html>
