@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RTZ Mídia — Gestão de Projetos</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{
+  --bg:#0e0e0f;--bg2:#161618;--bg3:#1e1e21;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --text:#f0ede8;--text2:#9e9b95;--text3:#5c5a56;
+  --green:#2ecc8f;--green-bg:rgba(46,204,143,0.10);--green-border:rgba(46,204,143,0.25);
+  --blue:#5b9cf6;--blue-bg:rgba(91,156,246,0.10);--blue-border:rgba(91,156,246,0.25);
+  --amber:#e8a030;--amber-bg:rgba(232,160,48,0.10);--amber-border:rgba(232,160,48,0.25);
+  --purple:#a78bfa;--purple-bg:rgba(167,139,250,0.10);--purple-border:rgba(167,139,250,0.25);
+  --coral:#f97b6b;--coral-bg:rgba(249,123,107,0.10);--coral-border:rgba(249,123,107,0.25);
+  --red:#e05c5c;--red-bg:rgba(224,92,92,0.10);--red-border:rgba(224,92,92,0.25);
+  --radius:10px;--radius-lg:16px;
+  --font:'Syne',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh;font-size:14px;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:99px;}
+
+.layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{padding:22px 18px 16px;border-bottom:1px solid var(--border);}
+.brand{font-size:17px;font-weight:700;letter-spacing:.02em;}
+.sub{font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:2px;}
+.dot{display:inline-block;width:7px;height:7px;background:var(--coral);border-radius:50%;margin-right:6px;box-shadow:0 0 8px var(--coral);}
+.nav-sep{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;padding:14px 16px 4px;}
+.nav-items{padding:0 10px;flex:1;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:var(--radius);cursor:pointer;color:var(--text2);font-size:13px;font-weight:500;transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;border-left:2px solid transparent;}
+.nav-item:hover{background:var(--bg3);color:var(--text);}
+.nav-item.active{background:var(--bg3);color:var(--text);border-left-color:var(--coral);}
+.nav-item .icon{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:14px;border-top:1px solid var(--border);margin-top:auto;}
+.footer-info{font-size:11px;color:var(--text3);font-family:var(--mono);text-align:center;line-height:1.7;}
+
+.main{overflow:auto;}
+.main-inner{padding:28px 32px;max-width:1400px;}
+.section{display:none;}
+.section.active{display:block;}
+.page-header{margin-bottom:22px;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+.page-title{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:3px;}
+.page-sub{font-size:13px;color:var(--text2);}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+.sc-coral::before{background:var(--coral);}
+.sc-green::before{background:var(--green);}
+.sc-amber::before{background:var(--amber);}
+.sc-blue::before{background:var(--blue);}
+.sc-red::before{background:var(--red);}
+.stat-label{font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.stat-value{font-size:20px;font-weight:700;font-family:var(--mono);}
+.sv-coral{color:var(--coral);}
+.sv-green{color:var(--green);}
+.sv-amber{color:var(--amber);}
+.sv-blue{color:var(--blue);}
+.sv-red{color:var(--red);}
+
+/* PIPELINE KANBAN */
+.pipeline-wrap{display:flex;gap:10px;overflow-x:auto;padding-bottom:14px;align-items:flex-start;}
+.pipeline-col{flex-shrink:0;width:220px;display:flex;flex-direction:column;gap:8px;}
+.pipeline-col-head{display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg) var(--radius-lg) 0 0;border-bottom:none;position:relative;overflow:hidden;}
+.pipeline-col-head::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.pipeline-col-name{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;}
+.pipeline-col-count{font-size:10px;font-family:var(--mono);color:var(--text3);}
+.pipeline-col-cards{display:flex;flex-direction:column;gap:6px;padding:8px;background:var(--bg2);border:1px solid var(--border);border-radius:0 0 var(--radius-lg) var(--radius-lg);min-height:60px;}
+.pipeline-arrow{display:flex;align-items:center;padding-top:44px;color:var(--text3);font-size:14px;flex-shrink:0;}
+
+/* PROJECT CARD */
+.proj-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:all .15s;}
+.proj-card:hover{border-color:var(--border2);transform:translateY(-1px);}
+.proj-card-name{font-size:12px;font-weight:600;margin-bottom:4px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.proj-card-cli{font-size:10px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;}
+.proj-card-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;}
+.proj-card-resp{font-size:10px;color:var(--text3);}
+.proj-card-prazo{font-size:10px;font-family:var(--mono);}
+.proj-card-prazo.atrasado{color:var(--red);}
+.proj-card-prazo.urgente{color:var(--amber);}
+.proj-card-prazo.ok{color:var(--text3);}
+.proj-progress{height:2px;background:var(--bg);border-radius:1px;margin-bottom:6px;overflow:hidden;}
+.proj-progress-fill{height:2px;border-radius:1px;transition:width .4s;}
+
+/* PIPELINE HEADER COLORS */
+.ph-briefing::before{background:#5b9cf6;}
+.ph-captacao::before{background:#a78bfa;}
+.ph-ingestao::before{background:#2ecc8f;}
+.ph-corte_bruto::before{background:#e8a030;}
+.ph-edicao_fina::before{background:#f97b6b;}
+.ph-cor::before{background:#e05c5c;}
+.ph-audio::before{background:#f2d600;}
+.ph-revisao::before{background:#c377e0;}
+.ph-entrega::before{background:#2ecc8f;}
+
+/* PROJECT DETAIL */
+.proj-detail{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:0;overflow:hidden;margin-bottom:16px;}
+.proj-detail-head{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.proj-detail-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+.proj-detail-sub{font-size:12px;color:var(--text2);font-family:var(--mono);}
+.proj-detail-body{padding:22px;}
+
+/* GANTT / TIMELINE */
+.fase-timeline{display:flex;flex-direction:column;gap:0;}
+.fase-row{display:grid;grid-template-columns:160px 1fr 90px;gap:0;align-items:center;border-bottom:1px solid var(--border);padding:0;}
+.fase-row:last-child{border-bottom:none;}
+.fase-label{padding:10px 14px;font-size:12px;color:var(--text2);font-weight:500;display:flex;align-items:center;gap:8px;}
+.fase-label .dot-fase{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.fase-bar-wrap{padding:10px 8px;position:relative;}
+.fase-bar-bg{height:20px;background:var(--bg3);border-radius:4px;overflow:hidden;position:relative;}
+.fase-bar-fill{height:20px;border-radius:4px;display:flex;align-items:center;padding:0 8px;font-size:10px;font-family:var(--mono);color:rgba(0,0,0,.7);font-weight:600;transition:width .5s;}
+.fase-status{padding:10px 8px;display:flex;justify-content:center;}
+
+/* FASE STATUS SELECTS */
+.fase-sel{background:var(--bg);border:1px solid var(--border2);border-radius:6px;color:var(--text);font-family:var(--mono);font-size:10px;padding:3px 6px;cursor:pointer;outline:none;width:100%;}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;font-size:10px;padding:2px 8px;border-radius:99px;font-weight:600;font-family:var(--mono);}
+.badge-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border);}
+.badge-blue{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);}
+.badge-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);}
+.badge-coral{background:var(--coral-bg);color:var(--coral);border:1px solid var(--coral-border);}
+.badge-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);}
+.badge-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border);}
+.badge-gray{background:rgba(255,255,255,.06);color:var(--text2);}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-group label{font-size:10px;color:var(--text3);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;}
+input,select,textarea{background:var(--bg);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;padding:7px 10px;width:100%;outline:none;transition:border .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--coral);}
+select option{background:var(--bg2);}
+textarea{resize:vertical;min-height:70px;}
+
+/* BTN */
+.btn{padding:7px 15px;border-radius:var(--radius);border:none;cursor:pointer;font-family:var(--font);font-size:13px;font-weight:600;transition:all .15s;}
+.btn-primary{background:var(--coral);color:#fff;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-ghost{background:var(--bg3);color:var(--text2);border:1px solid var(--border2);}
+.btn-ghost:hover{color:var(--text);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid transparent;}
+
+/* PANEL */
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:14px;overflow:hidden;}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:13px 17px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:8px;}
+.panel-title{font-size:13px;font-weight:600;}
+.panel-body{padding:16px 20px;}
+
+/* SEARCH */
+.search-wrap{position:relative;margin-bottom:14px;}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;opacity:.35;pointer-events:none;}
+.search-input{width:100%;padding:8px 12px 8px 36px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius);color:var(--text);font-family:var(--font);font-size:13px;outline:none;transition:border .15s;}
+.search-input:focus{border-color:var(--coral);}
+
+/* FILTER */
+.filter-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;}
+.fpill{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:600;font-family:var(--mono);border:1px solid var(--border2);background:none;color:var(--text2);cursor:pointer;transition:all .15s;}
+.fpill:hover{color:var(--text);}
+.fpill.active{background:var(--coral-bg);color:var(--coral);border-color:var(--coral-border);}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);width:640px;max-width:100%;}
+.modal-bar{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border);}
+.modal-bar-title{font-size:14px;font-weight:600;}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:20px;padding:0 4px;}
+.modal-close:hover{color:var(--text);}
+.modal-body{padding:20px;}
+.modal-actions{display:flex;gap:8px;padding:14px 20px;border-top:1px solid var(--border);justify-content:flex-end;}
+
+/* STARTUP */
+.startup-overlay{position:fixed;inset:0;background:#0e0e0f;z-index:99998;display:flex;align-items:center;justify-content:center;}
+.startup-overlay.gone{display:none;}
+.startup-box{background:#161618;border:1px solid rgba(255,255,255,0.13);border-radius:18px;padding:36px 40px;width:400px;max-width:92vw;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center;}
+.startup-icon{width:52px;height:52px;border-radius:14px;background:rgba(249,123,107,.12);display:flex;align-items:center;justify-content:center;font-size:22px;border:1px solid rgba(249,123,107,.25);}
+.startup-title{font-size:18px;font-weight:700;color:#f0ede8;}
+.startup-sub{font-size:12px;color:#9e9b95;font-family:'DM Mono',monospace;line-height:1.6;}
+.startup-btn-primary{width:100%;padding:11px;border-radius:10px;background:#f97b6b;color:#fff;font-family:'Syne',sans-serif;font-size:14px;font-weight:700;border:none;cursor:pointer;}
+.startup-btn-ghost{width:100%;padding:9px;border-radius:10px;background:none;border:1px solid rgba(255,255,255,0.13);color:#9e9b95;font-family:'Syne',sans-serif;font-size:13px;cursor:pointer;}
+.startup-btn-ghost:hover{border-color:rgba(255,255,255,0.25);color:#f0ede8;}
+.startup-sep{width:100%;display:flex;align-items:center;gap:10px;font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace;}
+.startup-sep::before,.startup-sep::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.08);}
+.drive-btn{width:100%;padding:10px;border-radius:10px;background:none;border:1px solid rgba(66,133,244,0.4);color:#4285f4;font-family:'Syne',sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;}
+.drive-status{font-size:11px;font-family:'DM Mono',monospace;min-height:16px;}
+.drive-status.ok{color:#2ecc8f;}
+.drive-status.err{color:#e05c5c;}
+.drive-status.loading{color:#9e9b95;}
+
+.toast{position:fixed;bottom:24px;right:24px;background:var(--bg2);border:1px solid var(--coral-border);color:var(--coral);font-family:var(--mono);font-size:12px;padding:10px 18px;border-radius:var(--radius);opacity:0;transform:translateY(8px);transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;transform:translateY(0);}
+.empty-state{text-align:center;padding:28px;color:var(--text3);font-size:13px;}
+
+@media(max-width:740px){
+  .layout{grid-template-columns:1fr;}
+  .sidebar{height:auto;position:static;}
+  .main-inner{padding:14px;}
+  .fase-row{grid-template-columns:120px 1fr 80px;}
+}
+</style>
+</head>
+<body>
+
+<!-- STARTUP -->
+<div class="startup-overlay" id="startup-overlay">
+  <div class="startup-box">
+    <div class="startup-icon">▤</div>
+    <div class="startup-title">Gestão de Projetos</div>
+    <div class="startup-sub">Carregue o backup ou comece uma sessão nova.</div>
+    <input type="file" id="startup-file" accept=".json" style="display:none" onchange="startupCarregar(event)">
+    <button class="startup-btn-primary" onclick="document.getElementById('startup-file').click()">Carregar backup (.json)</button>
+    <button class="startup-btn-ghost" onclick="startupPular()">Começar sem backup</button>
+    <div class="startup-sep">Google Drive</div>
+    <button class="drive-btn" onclick="driveCarregar()">
+      <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285f4" d="M6.28 3L2 10.25l4.44 7.68H15.5L20 10.25 15.72 3z"/><path fill="#0f9d58" d="M2 10.25L6.28 3h8.56l-4.28 7.25z" opacity=".7"/><path fill="#ffbb00" d="M15.5 17.93H6.44L2 10.25h8.56z" opacity=".85"/><path fill="#ea4335" d="M20 10.25l-4.5 7.68H15.5l4.28-7.68z" opacity=".9"/></svg>
+      Carregar do Drive
+    </button>
+    <div class="drive-status" id="drive-status"></div>
+    <div style="font-size:11px;color:#5c5a56;font-family:'DM Mono',monospace">Dados salvos automaticamente ao sair</div>
+  </div>
+</div>
+
+<div class="layout">
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand"><span class="dot"></span>RTZ Mídia</div>
+    <div class="sub">// pipeline de projetos</div>
+  </div>
+  <div class="nav-items">
+    <div class="nav-sep">Visualização</div>
+    <button class="nav-item active" onclick="goSec('pipeline',this)"><span class="icon">▤</span>Pipeline geral</button>
+    <button class="nav-item" onclick="goSec('projetos',this)"><span class="icon">◫</span>Todos os projetos</button>
+    <div class="nav-sep">Projetos ativos</div>
+    <div id="nav-projetos"></div>
+    <div class="nav-sep">Gestão</div>
+    <button class="nav-item" onclick="abrirModalNovo()"><span class="icon">⊕</span>Novo projeto</button>
+    <div class="nav-sep">Google Drive</div>
+    <button class="nav-item" onclick="driveSalvar()" style="color:#4285f4;border-left-color:#4285f4"><span class="icon">▲</span>Salvar no Drive</button>
+    <button class="nav-item" onclick="driveCarregarSidebar()" style="color:#4285f4"><span class="icon">▼</span>Carregar do Drive</button>
+    <div class="nav-sep">Sistema</div>
+    <button class="nav-item" onclick="exportarJSON()"><span class="icon">↓</span>Exportar backup</button>
+    <button class="nav-item" onclick="importarJSON()"><span class="icon">↑</span>Importar backup</button>
+  </div>
+  <div class="sidebar-footer">
+    <div class="footer-info" id="footer-info"></div>
+  </div>
+</aside>
+
+<div class="main">
+<div class="main-inner">
+
+<!-- PIPELINE GERAL -->
+<div id="sec-pipeline" class="section active">
+  <div class="page-header">
+    <div><div class="page-title">Pipeline RTZ</div><div class="page-sub">Visão geral de todos os projetos por fase</div></div>
+    <button class="btn btn-primary btn-sm" onclick="abrirModalNovo()">+ Novo projeto</button>
+  </div>
+  <div class="stats-row" id="pipeline-stats"></div>
+  <div id="pipeline-kanban"></div>
+</div>
+
+<!-- TODOS OS PROJETOS -->
+<div id="sec-projetos" class="section">
+  <div class="page-header">
+    <div><div class="page-title">Todos os projetos</div><div class="page-sub">Lista e timeline detalhada por projeto</div></div>
+    <button class="btn btn-primary btn-sm" onclick="abrirModalNovo()">+ Novo projeto</button>
+  </div>
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+    <input class="search-input" id="proj-busca" type="text" placeholder="Buscar por nome, cliente ou responsável..." oninput="renderProjetos()">
+  </div>
+  <div class="filter-row" id="proj-filtros"></div>
+  <div id="proj-lista"></div>
+</div>
+
+<!-- DETALHE PROJETO (seção dinâmica) -->
+<div id="sec-detalhe" class="section">
+  <div class="page-header">
+    <div>
+      <div class="page-title" id="det-titulo"></div>
+      <div class="page-sub" id="det-sub"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost btn-sm" onclick="goSec('pipeline',document.querySelector('.nav-item'))">← Pipeline</button>
+      <button class="btn btn-ghost btn-sm" id="det-edit-btn">✎ Editar</button>
+      <button class="btn btn-danger btn-sm" id="det-del-btn">× Remover</button>
+    </div>
+  </div>
+  <div id="det-content"></div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- MODAL NOVO/EDITAR PROJETO -->
+<div class="modal-overlay" id="modal-proj" onclick="if(event.target===this)fecharModal()">
+  <div class="modal">
+    <div class="modal-bar">
+      <span class="modal-bar-title" id="modal-proj-title">Novo projeto</span>
+      <button class="modal-close" onclick="fecharModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="form-group"><label>Nome do projeto</label><input id="p-nome" type="text" placeholder="ex: NIKE Summer Camp"></div>
+        <div class="form-group"><label>Cliente</label><input id="p-cliente" type="text" placeholder="ex: NIKE" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="form-group"><label>Responsável</label><input id="p-resp" type="text" placeholder="ex: Matheus"></div>
+        <div class="form-group"><label>Prazo de entrega</label><input id="p-prazo" type="date"></div>
+        <div class="form-group"><label>Tipo</label>
+          <select id="p-tipo">
+            <option value="video">Vídeo / Audiovisual</option>
+            <option value="foto">Foto / Imagem</option>
+            <option value="motion">Motion / Design</option>
+            <option value="podcast">Podcast / Áudio</option>
+            <option value="social">Social Media</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group"><label>Prioridade</label>
+          <select id="p-prior">
+            <option value="normal">Normal</option>
+            <option value="alta">Alta</option>
+            <option value="urgente">Urgente</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>Descrição / Briefing resumido</label><textarea id="p-desc" placeholder="Objetivo, referências, entregáveis..."></textarea></div>
+      <div class="form-group"><label>Fase atual</label>
+        <select id="p-fase">
+          <option value="briefing">Briefing</option>
+          <option value="captacao">Captação</option>
+          <option value="ingestao">Ingestão</option>
+          <option value="corte_bruto">Corte bruto</option>
+          <option value="edicao_fina">Edição fina</option>
+          <option value="cor">Cor / Gradação</option>
+          <option value="audio">Áudio / Mix</option>
+          <option value="revisao">Revisão</option>
+          <option value="entrega">Entrega</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarProjeto()">Salvar projeto</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="file-import" accept=".json" style="display:none" onchange="processarImport(event)">
+<div class="toast" id="toast"></div>
+
+<script>
+// ── CONFIG ───────────────────────────────────────────────────
+const KEY = 'rtz_pipeline_v1';
+const DRIVE_CLIENT_ID = '251018833740-pr9jp8qsbk3qj7bkbesh14hu8p12r6ja.apps.googleusercontent.com';
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const DRIVE_FOLDER_NAME = 'RTZ_Backups';
+const DRIVE_FILENAME = 'RTZ_Pipeline_backup.json';
+
+let db = { projetos: [] };
+let editandoId = null;
+let filtroStatus = 'todos';
+let driveToken = null, driveFolderId = null, _tokenClient = null, _resolveAuth = null;
+
+// ── FASES ────────────────────────────────────────────────────
+const FASES = [
+  { id:'briefing',    label:'Briefing',     cor:'#5b9cf6', pct:0   },
+  { id:'captacao',    label:'Captação',     cor:'#a78bfa', pct:14  },
+  { id:'ingestao',    label:'Ingestão',     cor:'#2ecc8f', pct:25  },
+  { id:'corte_bruto', label:'Corte bruto',  cor:'#e8a030', pct:38  },
+  { id:'edicao_fina', label:'Edição fina',  cor:'#f97b6b', pct:50  },
+  { id:'cor',         label:'Cor / Grade',  cor:'#e05c5c', pct:63  },
+  { id:'audio',       label:'Áudio / Mix',  cor:'#f2d600', pct:75  },
+  { id:'revisao',     label:'Revisão',      cor:'#c377e0', pct:88  },
+  { id:'entrega',     label:'Entrega',      cor:'#2ecc8f', pct:100 },
+];
+const FASE_MAP = Object.fromEntries(FASES.map(f => [f.id, f]));
+
+const FASE_STATUS = {
+  nao_iniciado: { label:'Não iniciado', badge:'badge-gray' },
+  em_andamento: { label:'Em andamento', badge:'badge-amber' },
+  concluido:    { label:'Concluído',    badge:'badge-green' },
+  bloqueado:    { label:'Bloqueado',    badge:'badge-red' },
+};
+
+const TIPO_LABEL = { video:'Vídeo', foto:'Foto', motion:'Motion', podcast:'Podcast', social:'Social', outro:'Outro' };
+const PRIOR_BADGE = { normal:'badge-gray', alta:'badge-amber', urgente:'badge-red' };
+
+// ── UTILS ────────────────────────────────────────────────────
+function load(){ try{ const d=localStorage.getItem(KEY); if(d) db=JSON.parse(d); }catch(e){} if(!Array.isArray(db.projetos)) db.projetos=[]; }
+function save(){ localStorage.setItem(KEY, JSON.stringify(db)); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2400); }
+function hoje(){ return new Date().toISOString().slice(0,10); }
+function formatData(s){ if(!s)return'—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+function fecharModal(){ document.getElementById('modal-proj').classList.remove('open'); editandoId=null; }
+
+function diasParaPrazo(prazo){
+  if(!prazo) return null;
+  const d = Math.ceil((new Date(prazo) - new Date()) / 86400000);
+  return d;
+}
+function prazoClass(prazo){
+  const d = diasParaPrazo(prazo);
+  if(d === null) return '';
+  if(d < 0) return 'atrasado';
+  if(d <= 3) return 'urgente';
+  return 'ok';
+}
+function prazoLabel(prazo){
+  const d = diasParaPrazo(prazo);
+  if(d === null) return '—';
+  if(d < 0) return `${Math.abs(d)}d atrasado`;
+  if(d === 0) return 'Hoje!';
+  if(d === 1) return 'Amanhã';
+  return `${d}d`;
+}
+
+function getPct(proj){
+  const fase = FASE_MAP[proj.faseAtual];
+  return fase ? fase.pct : 0;
+}
+
+// ── NAVEGAÇÃO ────────────────────────────────────────────────
+function goSec(id, btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  if(id==='pipeline') renderPipeline();
+  if(id==='projetos') renderProjetos();
+}
+
+function abrirDetalhe(id){
+  const proj = db.projetos.find(p=>p.id===id);
+  if(!proj) return;
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-detalhe').classList.add('active');
+  document.getElementById('det-titulo').textContent = proj.nome;
+  document.getElementById('det-sub').textContent = `${proj.cliente||'—'} · ${TIPO_LABEL[proj.tipo]||''} · Responsável: ${proj.responsavel||'—'}`;
+  document.getElementById('det-edit-btn').onclick = ()=>abrirModalEditar(id);
+  document.getElementById('det-del-btn').onclick = ()=>deletarProjeto(id);
+  renderDetalhe(proj);
+}
+
+// ── PIPELINE GERAL ───────────────────────────────────────────
+function renderPipeline(){
+  const ativos = db.projetos.filter(p=>p.faseAtual !== 'entrega' || p.status !== 'concluido');
+  const entregues = db.projetos.filter(p=>p.faseAtual === 'entrega');
+  const atrasados = db.projetos.filter(p=>p.prazo && diasParaPrazo(p.prazo) < 0 && p.faseAtual !== 'entrega');
+  const urgentes = db.projetos.filter(p=>p.prazo && diasParaPrazo(p.prazo) >= 0 && diasParaPrazo(p.prazo) <= 3 && p.faseAtual !== 'entrega');
+
+  document.getElementById('pipeline-stats').innerHTML = [
+    ['sc-coral','sv-coral','Projetos ativos',ativos.length],
+    ['sc-green','sv-green','Entregues',entregues.length],
+    ['sc-amber','sv-amber','Urgentes (≤3d)',urgentes.length],
+    ['sc-red','sv-red','Atrasados',atrasados.length],
+  ].map(([sc,sv,l,v])=>`<div class="stat-card ${sc}"><div class="stat-label">${l}</div><div class="stat-value ${sv}">${v}</div></div>`).join('');
+
+  if(!db.projetos.length){
+    document.getElementById('pipeline-kanban').innerHTML = '<div class="empty-state">Nenhum projeto cadastrado. Clique em <b>+ Novo projeto</b> para começar.</div>';
+    return;
+  }
+
+  const projetosPorFase = Object.fromEntries(FASES.map(f=>[f.id,[]]));
+  db.projetos.forEach(p=>{ if(projetosPorFase[p.faseAtual]) projetosPorFase[p.faseAtual].push(p); });
+
+  document.getElementById('pipeline-kanban').innerHTML = `<div class="pipeline-wrap">
+    ${FASES.map((fase, i) => {
+      const cards = projetosPorFase[fase.id] || [];
+      return `
+        ${i>0?'<div class="pipeline-arrow">›</div>':''}
+        <div class="pipeline-col">
+          <div class="pipeline-col-head ph-${fase.id}">
+            <div class="pipeline-col-name" style="color:${fase.cor}">${fase.label}</div>
+            <div class="pipeline-col-count">${cards.length} projeto${cards.length!==1?'s':''} · ${fase.pct}%</div>
+          </div>
+          <div class="pipeline-col-cards">
+            ${!cards.length ? '<div style="font-size:11px;color:var(--text3);text-align:center;padding:8px">—</div>' :
+              cards.map(p => {
+                const pc = prazoClass(p.prazo);
+                const pct = getPct(p);
+                return `<div class="proj-card" onclick="abrirDetalhe(${p.id})">
+                  <div class="proj-progress"><div class="proj-progress-fill" style="width:${pct}%;background:${fase.cor}"></div></div>
+                  <div class="proj-card-name" title="${p.nome}">${p.nome}</div>
+                  <div class="proj-card-cli">${p.cliente||'—'}</div>
+                  <div class="proj-card-foot">
+                    <div class="proj-card-resp" style="font-size:9px">${p.responsavel||''}</div>
+                    ${p.prazo?`<div class="proj-card-prazo ${pc}">${prazoLabel(p.prazo)}</div>`:''}
+                  </div>
+                </div>`;
+              }).join('')}
+          </div>
+        </div>`;
+    }).join('')}
+  </div>`;
+
+  renderNavProjetos();
+}
+
+// ── TODOS OS PROJETOS ────────────────────────────────────────
+function renderProjetos(){
+  const q = (document.getElementById('proj-busca')?.value||'').toLowerCase();
+  const fEl = document.getElementById('proj-filtros');
+  const statuses = ['todos','briefing','captacao','ingestao','corte_bruto','edicao_fina','cor','audio','revisao','entrega'];
+  fEl.innerHTML = statuses.map(s=>`<button class="fpill ${filtroStatus===s?'active':''}" onclick="setFiltroStatus('${s}')">${s==='todos'?'Todos':(FASE_MAP[s]?.label||s)}</button>`).join('');
+
+  let lista = [...db.projetos].sort((a,b)=>(a.prazo||'9').localeCompare(b.prazo||'9'));
+  if(filtroStatus!=='todos') lista=lista.filter(p=>p.faseAtual===filtroStatus);
+  if(q) lista=lista.filter(p=>(p.nome||'').toLowerCase().includes(q)||(p.cliente||'').toLowerCase().includes(q)||(p.responsavel||'').toLowerCase().includes(q));
+
+  const el = document.getElementById('proj-lista');
+  if(!lista.length){el.innerHTML='<div class="empty-state">Nenhum projeto encontrado.</div>';return;}
+
+  el.innerHTML = lista.map(p=>{
+    const fase = FASE_MAP[p.faseAtual]||FASES[0];
+    const pct = getPct(p);
+    const pc = prazoClass(p.prazo);
+    return `<div class="proj-detail" style="cursor:pointer" onclick="abrirDetalhe(${p.id})">
+      <div class="proj-detail-head">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+            <div class="proj-detail-title">${p.nome}</div>
+            <span class="badge ${PRIOR_BADGE[p.prioridade]||'badge-gray'}">${p.prioridade||'normal'}</span>
+            <span class="badge badge-gray">${TIPO_LABEL[p.tipo]||p.tipo}</span>
+          </div>
+          <div class="proj-detail-sub">${p.cliente||'—'} · Responsável: ${p.responsavel||'—'} · Prazo: <span class="${pc}">${formatData(p.prazo)} ${p.prazo?'('+prazoLabel(p.prazo)+')':''}</span></div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);color:${fase.cor}">${pct}%</div>
+          <div style="font-size:11px;color:var(--text3);font-family:var(--mono)">${fase.label}</div>
+        </div>
+      </div>
+      <!-- Mini pipeline -->
+      <div style="padding:10px 22px 14px;overflow-x:auto">
+        <div style="display:flex;align-items:center;gap:0;min-width:max-content">
+          ${FASES.map(f=>{
+            const isCur = f.id===p.faseAtual;
+            const isDone = f.pct < pct || f.id===p.faseAtual;
+            const fStatus = p.faseStatus?.[f.id]||'nao_iniciado';
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;position:relative" title="${f.label}">
+              <div style="width:28px;height:28px;border-radius:50%;background:${isDone?f.cor+'22':'var(--bg3)'};border:2px solid ${isCur?f.cor:isDone?f.cor+'66':'var(--border2)'};display:flex;align-items:center;justify-content:center;z-index:1;${isCur?'box-shadow:0 0 10px '+f.cor+'66':''}">
+                ${fStatus==='concluido'?`<svg width="10" height="8" viewBox="0 0 10 8" fill="none"><path d="M1 4l3 3 5-6" stroke="${f.cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`:
+                  fStatus==='bloqueado'?`<div style="width:8px;height:2px;background:var(--red);border-radius:1px"></div>`:
+                  isCur?`<div style="width:8px;height:8px;border-radius:50%;background:${f.cor}"></div>`:''}
+              </div>
+              <div style="font-size:9px;font-family:var(--mono);color:${isCur?f.cor:'var(--text3)'};white-space:nowrap;max-width:60px;text-align:center;line-height:1.2">${f.label}</div>
+              ${FASES.indexOf(f)<FASES.length-1?`<div style="position:absolute;top:14px;left:28px;width:calc(100% - 14px);height:2px;background:${isDone&&f.pct<pct?f.cor+'44':'var(--border)'};z-index:0"></div>`:''}
+            </div>
+            ${FASES.indexOf(f)<FASES.length-1?'<div style="width:32px;flex-shrink:0"></div>':''}`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function setFiltroStatus(v){filtroStatus=v;renderProjetos();}
+
+// ── DETALHE PROJETO ──────────────────────────────────────────
+function renderDetalhe(proj){
+  const fase = FASE_MAP[proj.faseAtual]||FASES[0];
+  const pct = getPct(proj);
+  const pc = prazoClass(proj.prazo);
+
+  document.getElementById('det-content').innerHTML = `
+    <!-- KPI row -->
+    <div class="stats-row" style="margin-bottom:16px">
+      <div class="stat-card sc-coral"><div class="stat-label">Progresso</div><div class="stat-value sv-coral">${pct}%</div></div>
+      <div class="stat-card sc-green"><div class="stat-label">Fase atual</div><div class="stat-value" style="font-size:14px;color:${fase.cor}">${fase.label}</div></div>
+      <div class="stat-card ${pc==='atrasado'?'sc-red':pc==='urgente'?'sc-amber':'sc-green'}"><div class="stat-label">Prazo</div><div class="stat-value ${pc==='atrasado'?'sv-red':pc==='urgente'?'sv-amber':'sv-green'}">${formatData(proj.prazo)}</div></div>
+      <div class="stat-card sc-blue"><div class="stat-label">Dias restantes</div><div class="stat-value sv-blue">${diasParaPrazo(proj.prazo)!==null?diasParaPrazo(proj.prazo)+'d':'—'}</div></div>
+    </div>
+
+    ${proj.descricao?`<div class="panel"><div class="panel-head"><span class="panel-title">Briefing / Descrição</span></div><div class="panel-body"><div style="font-size:13px;color:var(--text2);line-height:1.7;white-space:pre-wrap">${proj.descricao}</div></div></div>`:''}
+
+    <!-- Arquivos & Links -->
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Arquivos & Localização</span></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">▤ HD/SSD dos brutos (ingestão)</div>
+            <input type="text" value="${proj.hdBrutos||''}" placeholder="ex: SSD_PROJETOS_01"
+              style="font-family:var(--mono);font-size:12px"
+              onchange="salvarCampo(${proj.id},'hdBrutos',this.value)">
+            ${proj.hdBrutos?`<div style="font-size:10px;color:var(--green);font-family:var(--mono);margin-top:4px">✓ ${proj.hdBrutos}</div>`:''}
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">◎ Link final no Google Drive</div>
+            <input type="text" value="${proj.linkDrive||''}" placeholder="https://drive.google.com/..."
+              style="font-family:var(--mono);font-size:12px"
+              onchange="salvarCampo(${proj.id},'linkDrive',this.value)">
+            ${proj.linkDrive?`<div style="margin-top:4px"><a href="${proj.linkDrive}" target="_blank" style="font-size:10px;color:var(--blue);font-family:var(--mono);text-decoration:none">↗ Abrir no Drive</a></div>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline de fases -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Pipeline do projeto</span>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono)">Edite responsável, status e dados de cada fase</span>
+      </div>
+      <div style="overflow-x:auto">
+        <table width="100%" style="border-collapse:collapse;min-width:700px">
+          <thead>
+            <tr style="background:var(--bg3)">
+              <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);width:140px">Fase</th>
+              <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border)">Progresso</th>
+              <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);width:140px">Responsável</th>
+              <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);width:130px">Status</th>
+              <th style="text-align:left;padding:9px 14px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--border);width:170px">Extra</th>
+            </tr>
+          </thead>
+          <tbody>
+          ${FASES.map(f=>{
+            const isCur = f.id===proj.faseAtual;
+            const fStatus = proj.faseStatus?.[f.id]||( f.pct < pct ? 'concluido' : isCur ? 'em_andamento' : 'nao_iniciado');
+            const barW = fStatus==='concluido'?100:isCur?50:0;
+            const resp = proj.faseResp?.[f.id] || proj.responsavel || '';
+            // Extra col: HD para ingestao, Drive link para entrega
+            let extraHtml = '';
+            if(f.id==='ingestao'){
+              const hd = proj.hdBrutos||'';
+              extraHtml=`<input type="text" value="${hd}" placeholder="HD/SSD..."
+                style="font-size:11px;font-family:var(--mono);padding:4px 8px;width:100%"
+                onchange="salvarCampo(${proj.id},'hdBrutos',this.value)"
+                title="HD/SSD onde estão os arquivos brutos">`;
+            } else if(f.id==='entrega'){
+              const link = proj.linkDrive||'';
+              extraHtml=`<div style="display:flex;gap:4px;align-items:center">
+                <input type="text" value="${link}" placeholder="Link Drive..."
+                  style="font-size:11px;font-family:var(--mono);padding:4px 8px;flex:1;min-width:0"
+                  onchange="salvarCampo(${proj.id},'linkDrive',this.value)"
+                  title="Link dos arquivos finais no Google Drive">
+                ${link?`<a href="${link}" target="_blank" style="color:var(--blue);font-size:16px;text-decoration:none;flex-shrink:0" title="Abrir">↗</a>`:''}
+              </div>`;
+            } else {
+              extraHtml=`<span style="font-size:10px;color:var(--text3)">—</span>`;
+            }
+            return `<tr style="border-bottom:1px solid var(--border);${isCur?'background:rgba(255,255,255,.025)':''}">
+              <td style="padding:10px 14px">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="width:8px;height:8px;border-radius:50%;background:${f.cor};flex-shrink:0;${isCur?'box-shadow:0 0 8px '+f.cor:''}"></div>
+                  <span style="font-size:13px;font-weight:${isCur?700:400};color:${isCur?f.cor:'var(--text2)'}">${f.label}</span>
+                </div>
+              </td>
+              <td style="padding:10px 14px">
+                <div style="height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-bottom:3px">
+                  <div style="height:6px;width:${barW}%;background:${f.cor}bb;border-radius:3px;transition:width .4s"></div>
+                </div>
+                <div style="font-size:10px;font-family:var(--mono);color:var(--text3)">${barW}%</div>
+              </td>
+              <td style="padding:6px 14px">
+                <input type="text" value="${resp}" placeholder="Responsável..."
+                  style="font-size:12px;padding:4px 8px"
+                  onchange="salvarFaseResp(${proj.id},'${f.id}',this.value)">
+              </td>
+              <td style="padding:6px 14px">
+                <select class="fase-sel" onchange="atualizarFaseStatus(${proj.id},'${f.id}',this.value)"
+                  style="border-color:${fStatus==='concluido'?'var(--green-border)':fStatus==='em_andamento'?'var(--amber-border)':fStatus==='bloqueado'?'var(--red-border)':'var(--border2)'}">
+                  ${Object.entries(FASE_STATUS).map(([k,v])=>`<option value="${k}" ${fStatus===k?'selected':''}>${v.label}</option>`).join('')}
+                </select>
+              </td>
+              <td style="padding:6px 14px">${extraHtml}</td>
+            </tr>`;
+          }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Avanço de fase -->
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Avançar fase</span></div>
+      <div class="panel-body">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          ${FASES.map(f=>`
+            <button onclick="avancarParaFase(${proj.id},'${f.id}')"
+              class="btn ${f.id===proj.faseAtual?'btn-primary':'btn-ghost'} btn-sm"
+              style="${f.id===proj.faseAtual?'background:'+f.cor+';border-color:'+f.cor:''}">
+              ${f.label}
+            </button>`).join('<span style="color:var(--text3)">›</span>')}
+        </div>
+      </div>
+    </div>
+
+    <!-- Notas -->
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Notas da fase atual</span></div>
+      <div class="panel-body">
+        <textarea id="nota-textarea" style="min-height:80px" placeholder="Observações, pendências, links..." onchange="salvarNota(${proj.id},this.value)">${proj.notaFase||''}</textarea>
+      </div>
+    </div>`;
+}
+
+function salvarCampo(projId, campo, valor){
+  const proj = db.projetos.find(p=>p.id===projId); if(!proj) return;
+  proj[campo] = valor;
+  proj.atualizado = new Date().toISOString();
+  save(); toast('Salvo!');
+}
+
+function salvarFaseResp(projId, faseId, resp){
+  const proj = db.projetos.find(p=>p.id===projId); if(!proj) return;
+  if(!proj.faseResp) proj.faseResp = {};
+  proj.faseResp[faseId] = resp;
+  proj.atualizado = new Date().toISOString();
+  save();
+}
+
+function atualizarFaseStatus(projId, faseId, status){
+  const proj = db.projetos.find(p=>p.id===projId); if(!proj) return;
+  if(!proj.faseStatus) proj.faseStatus={};
+  proj.faseStatus[faseId] = status;
+  // Se marcou a fase atual como concluído, avança automaticamente
+  if(status==='concluido' && faseId===proj.faseAtual){
+    const idx = FASES.findIndex(f=>f.id===faseId);
+    if(idx < FASES.length-1) proj.faseAtual = FASES[idx+1].id;
+  }
+  proj.atualizado = new Date().toISOString();
+  save(); abrirDetalhe(projId); renderNavProjetos(); toast('Status atualizado!');
+}
+
+function avancarParaFase(projId, faseId){
+  const proj = db.projetos.find(p=>p.id===projId); if(!proj) return;
+  proj.faseAtual = faseId;
+  proj.atualizado = new Date().toISOString();
+  save(); abrirDetalhe(projId); renderNavProjetos(); toast('Fase atualizada!');
+}
+
+function salvarNota(projId, val){
+  const proj = db.projetos.find(p=>p.id===projId); if(!proj) return;
+  proj.notaFase = val;
+  save();
+}
+
+// ── MODAL PROJETO ────────────────────────────────────────────
+function abrirModalNovo(){
+  editandoId = null;
+  document.getElementById('modal-proj-title').textContent = 'Novo projeto';
+  ['p-nome','p-cliente','p-resp','p-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-prazo').value = '';
+  document.getElementById('p-tipo').value = 'video';
+  document.getElementById('p-prior').value = 'normal';
+  document.getElementById('p-fase').value = 'briefing';
+  document.getElementById('modal-proj').classList.add('open');
+}
+
+function abrirModalEditar(id){
+  const proj = db.projetos.find(p=>p.id===id); if(!proj) return;
+  editandoId = id;
+  document.getElementById('modal-proj-title').textContent = 'Editar projeto';
+  document.getElementById('p-nome').value = proj.nome||'';
+  document.getElementById('p-cliente').value = proj.cliente||'';
+  document.getElementById('p-resp').value = proj.responsavel||'';
+  document.getElementById('p-prazo').value = proj.prazo||'';
+  document.getElementById('p-tipo').value = proj.tipo||'video';
+  document.getElementById('p-prior').value = proj.prioridade||'normal';
+  document.getElementById('p-fase').value = proj.faseAtual||'briefing';
+  document.getElementById('p-desc').value = proj.descricao||'';
+  document.getElementById('modal-proj').classList.add('open');
+}
+
+function salvarProjeto(){
+  const nome = document.getElementById('p-nome').value.trim();
+  if(!nome){toast('Informe o nome do projeto');return;}
+  const proj = {
+    id: editandoId || Date.now(),
+    nome,
+    cliente: document.getElementById('p-cliente').value.trim(),
+    responsavel: document.getElementById('p-resp').value.trim(),
+    prazo: document.getElementById('p-prazo').value,
+    tipo: document.getElementById('p-tipo').value,
+    prioridade: document.getElementById('p-prior').value,
+    faseAtual: document.getElementById('p-fase').value,
+    descricao: document.getElementById('p-desc').value.trim(),
+    faseStatus: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.faseStatus||{}) : {},
+    faseResp: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.faseResp||{}) : {},
+    hdBrutos: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.hdBrutos||'') : '',
+    linkDrive: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.linkDrive||'') : '',
+    notaFase: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.notaFase||'') : '',
+    criado: editandoId ? (db.projetos.find(p=>p.id===editandoId)?.criado||new Date().toISOString()) : new Date().toISOString(),
+    atualizado: new Date().toISOString(),
+  };
+  if(editandoId) db.projetos = db.projetos.map(p=>p.id===editandoId?proj:p);
+  else db.projetos.unshift(proj);
+  save(); fecharModal(); renderPipeline(); renderNavProjetos();
+  toast(editandoId?'Projeto atualizado!':'Projeto criado!');
+  if(editandoId) abrirDetalhe(editandoId);
+}
+
+function deletarProjeto(id){
+  if(!confirm('Remover este projeto permanentemente?'))return;
+  db.projetos = db.projetos.filter(p=>p.id!==id);
+  save(); goSec('pipeline',document.querySelector('.nav-item')); toast('Projeto removido.');
+}
+
+// ── NAV PROJETOS ─────────────────────────────────────────────
+function renderNavProjetos(){
+  const el = document.getElementById('nav-projetos');
+  const ativos = db.projetos.filter(p=>p.faseAtual!=='entrega').slice(0,8);
+  el.innerHTML = ativos.map(p=>{
+    const fase = FASE_MAP[p.faseAtual]||FASES[0];
+    const pc = prazoClass(p.prazo);
+    return `<button class="nav-item" onclick="abrirDetalhe(${p.id})" style="font-size:12px">
+      <span style="width:6px;height:6px;border-radius:50%;background:${fase.cor};flex-shrink:0;box-shadow:0 0 5px ${fase.cor}66"></span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left">${p.nome}</span>
+      ${pc==='atrasado'?'<span style="font-size:9px;color:var(--red);flex-shrink:0">●</span>':pc==='urgente'?'<span style="font-size:9px;color:var(--amber);flex-shrink:0">●</span>':''}
+    </button>`;
+  }).join('');
+}
+
+// ── EXPORT / IMPORT ──────────────────────────────────────────
+function exportarJSON(){ const blob=new Blob([JSON.stringify({versao:'rtz-pipeline-v1',exportado:new Date().toISOString(),...db},null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='RTZ_Pipeline_'+hoje()+'.json'; a.click(); URL.revokeObjectURL(url); toast('Backup exportado!'); }
+function importarJSON(){ document.getElementById('file-import').click(); }
+function processarImport(ev){ const file=ev.target.files[0];if(!file)return; const r=new FileReader(); r.onload=e=>{try{aplicarDados(JSON.parse(e.target.result));toast('Importado!');}catch(e){toast('Arquivo inválido');}}; r.readAsText(file); ev.target.value=''; }
+function aplicarDados(d){ if(d.projetos) db={projetos:d.projetos}; else if(Array.isArray(d)) db={projetos:d}; save(); renderPipeline(); renderNavProjetos(); }
+
+// ── STARTUP ──────────────────────────────────────────────────
+function startupCarregar(ev){ const file=ev.target.files[0];if(!file)return; const r=new FileReader(); r.onload=e=>{try{aplicarDados(JSON.parse(e.target.result)); document.getElementById('startup-overlay').classList.add('gone'); toast('Backup carregado!');}catch(e){startupPular();}}; r.readAsText(file); ev.target.value=''; }
+function startupPular(){ document.getElementById('startup-overlay').classList.add('gone'); }
+
+// ── GOOGLE DRIVE ─────────────────────────────────────────────
+function driveSetStatus(msg,tipo){ const el=document.getElementById('drive-status'); if(el){el.textContent=msg;el.className='drive-status '+(tipo||'');} }
+function driveInicializarGIS(){ if(_tokenClient)return; _tokenClient=google.accounts.oauth2.initTokenClient({client_id:DRIVE_CLIENT_ID,scope:DRIVE_SCOPE,callback:(resp)=>{ if(resp.error){if(_resolveAuth)_resolveAuth(null,resp.error);return;} driveToken=resp.access_token; if(_resolveAuth)_resolveAuth(resp.access_token,null); }}); }
+function driveAutenticar(){ return new Promise((resolve,reject)=>{ driveInicializarGIS(); _resolveAuth=(token,err)=>{ _resolveAuth=null; if(err)reject(new Error(err)); else resolve(token); }; _tokenClient.requestAccessToken({prompt:driveToken?'':'consent'}); }); }
+async function driveObterOuCriarPasta(){ if(driveFolderId)return driveFolderId; const sr=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FOLDER_NAME}'+and+mimeType='application/vnd.google-apps.folder'+and+trashed=false&fields=files(id)`,{headers:{Authorization:`Bearer ${driveToken}`}}); const sd=await sr.json(); if(sd.files?.length){driveFolderId=sd.files[0].id;return driveFolderId;} const cr=await fetch('https://www.googleapis.com/drive/v3/files',{method:'POST',headers:{Authorization:`Bearer ${driveToken}`,'Content-Type':'application/json'},body:JSON.stringify({name:DRIVE_FOLDER_NAME,mimeType:'application/vnd.google-apps.folder'})}); const cd=await cr.json(); driveFolderId=cd.id; return driveFolderId; }
+async function driveBuscarArquivo(){ await driveObterOuCriarPasta(); const sr=await fetch(`https://www.googleapis.com/drive/v3/files?q=name='${DRIVE_FILENAME}'+and+'${driveFolderId}'+in+parents+and+trashed=false&fields=files(id,name,modifiedTime)`,{headers:{Authorization:`Bearer ${driveToken}`}}); const sd=await sr.json(); return sd.files?.length?sd.files[0]:null; }
+async function driveUpload(payload){ await driveObterOuCriarPasta(); const existing=await driveBuscarArquivo(); const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}); const form=new FormData(); form.append('metadata',new Blob([JSON.stringify(existing?{name:DRIVE_FILENAME}:{name:DRIVE_FILENAME,parents:[driveFolderId]})],{type:'application/json'})); form.append('file',blob); const method=existing?'PATCH':'POST'; const url=existing?`https://www.googleapis.com/upload/drive/v3/files/${existing.id}?uploadType=multipart`:'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart'; const res=await fetch(url,{method,headers:{Authorization:`Bearer ${driveToken}`},body:form}); return res.ok; }
+async function driveSalvar(){ try{ driveSetStatus('Autenticando...','loading'); if(!driveToken)await driveAutenticar(); driveSetStatus('Salvando...','loading'); const ok=await driveUpload({versao:'rtz-pipeline-v1',exportado:new Date().toISOString(),...db}); driveSetStatus(ok?'✓ Salvo!':'✗ Falha',ok?'ok':'err'); if(ok)toast('Salvo no Drive!'); }catch(e){driveSetStatus('✗ '+e.message,'err');} }
+async function driveCarregar(){ try{ driveSetStatus('Autenticando...','loading'); if(!driveToken)await driveAutenticar(); driveSetStatus('Buscando...','loading'); const file=await driveBuscarArquivo(); if(!file){driveSetStatus('Nenhum backup encontrado.','err'); setTimeout(()=>startupPular(),2000);return;} const mod=new Date(file.modifiedTime).toLocaleString('pt-BR'); const dl=await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,{headers:{Authorization:`Bearer ${driveToken}`}}); const data=await dl.json(); aplicarDados(data); document.getElementById('startup-overlay').classList.add('gone'); driveSetStatus('✓ Restaurado ('+mod+')','ok'); toast('Dados carregados!'); }catch(e){driveSetStatus('✗ '+e.message,'err');} }
+async function driveCarregarSidebar(){ try{ if(!driveToken)await driveAutenticar(); const file=await driveBuscarArquivo(); if(!file){alert('Nenhum backup no Drive ainda.');return;} const mod=new Date(file.modifiedTime).toLocaleString('pt-BR'); if(!confirm('Restaurar backup salvo em '+mod+'?'))return; const dl=await fetch(`https://www.googleapis.com/drive/v3/files/${file.id}?alt=media`,{headers:{Authorization:`Bearer ${driveToken}`}}); const data=await dl.json(); aplicarDados(data); toast('Dados restaurados!'); }catch(e){alert('Erro: '+e.message);} }
+async function autoSaveAoSair(){ if(!driveToken)return; try{ await driveUpload({versao:'rtz-pipeline-v1',exportado:new Date().toISOString(),...db}); }catch(e){} }
+window.addEventListener('pagehide',autoSaveAoSair);
+window.addEventListener('beforeunload',autoSaveAoSair);
+
+// ── INIT ─────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  load();
+  renderPipeline();
+  renderNavProjetos();
+  document.getElementById('footer-info').innerHTML='Pipeline · RTZ<br>'+new Date().toLocaleDateString('pt-BR');
+});
+</script>
+</body>
+</html>
